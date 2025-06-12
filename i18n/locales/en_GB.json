@@ -1,4 +1,10 @@
 {
+  "noItems": "No items found",
+  "folderEmpty": "This folder is empty",
+  "name": "Name",
+  "modified": "Modified",
+  "type": "Type",
+  "size": "Size",
   "drives": "Drive | Drives",
   "availableOutOf": "{available} free of {total}"
 }

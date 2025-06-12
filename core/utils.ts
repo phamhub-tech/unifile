@@ -1,5 +1,8 @@
 import type { TypedRouteLocationRaw, TypedRouteLocationRawFromName } from "@typed-router/__router";
 import type { RoutesNamesList, RoutesParamsRecord } from "@typed-router/__routes";
+import { enUS } from 'date-fns/locale';
+import { differenceInDays, formatRelative, differenceInHours, formatDistance, format } from 'date-fns';
+import type { HTMLAttributes } from "vue";
 
 /**
  * Gets the route while including the right locale. It's a thin wrapper around calling
@@ -68,6 +71,62 @@ export function humanizeBytes(bytes: number): string {
 	}
 
 	return `${size} ${suffix}`
+}
+
+/**
+ * Returns a human friendly version of the date
+ *
+ * @param date The date to humanize
+ */
+export function humanizeDate(date: Date, addRelTime = true): string {
+	const now = new Date();
+	const localeToUse = enUS;
+
+	const daysDiff = differenceInDays(now, date);
+	// console.log(date.toISOString(), daysDiff, daysDiff < 2)
+	if (daysDiff < 1) {
+		let parsedDate = formatRelative(date, now, { locale: localeToUse }).replace(
+			/^\w/,
+			(v) => v.toUpperCase()
+		);
+		if (addRelTime && differenceInHours(now, date) <= 6) {
+			const relString = formatDistance(date, now, {
+				addSuffix: true,
+				locale: localeToUse,
+			}).replace(/^\w/, (v) => v.toUpperCase());
+			parsedDate += ` (${relString})`;
+		}
+
+		return parsedDate;
+	} else if (daysDiff < 7) {
+		return format(date, "eeee 'At' h:mm a");
+	} else return format(date, "MMM do, yyyy", { locale: localeToUse });
+}
+
+
+type TAttributes = keyof HTMLAttributes | (string & {});
+/**
+ * Returns {attrs} with all {attr} removed
+ *
+ * @param attrs - The record of HTMLAttributes
+ * @param attr - The attribute(s) to remove from {attrs}
+ */
+export function removeFromAttrs(
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	attrs: Record<string, any>,
+	attr: TAttributes | TAttributes[],
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Record<string, any> {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const at: Record<string, any> = {}
+	for (const attrib of Object.keys(attrs)) {
+		if (Array.isArray(attr) && attr.includes(attrib)) continue
+		else if (attrib === attr) continue
+
+		at[attrib] = attrs[attrib]
+	}
+
+	return at
 }
 
 interface ITweenOptions {

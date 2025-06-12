@@ -23,6 +23,7 @@
     "@tauri-apps/plugin-opener": "^2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "eslint": "^9.28.0",
     "lucide-vue-next": "^0.514.0",
     "nuxt": "^3.17.5",
@@ -41,6 +42,7 @@
     "@nuxt/test-utils": "3.19.1",
     "@tauri-apps/cli": "^2",
     "prettier-plugin-tailwindcss": "^0.6.12",
+    "sass-embedded": "^1.89.2",
     "typescript": "~5.6.2",
     "vite": "^6.0.3"
   },

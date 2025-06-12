@@ -1,4 +1,6 @@
-use crate::{api::{ApiError, ApiResponse}, api_response, fs::types::Drive};
+use crate::api::{ApiError, ApiResponse};
+use crate::api_response;
+use crate::fs::models::{drive::Drive, entry::FSEntry};
 
 #[tauri::command]
 pub fn get_drives() -> Result<ApiResponse<Vec<Drive>>, ApiError> {
@@ -8,4 +10,9 @@ pub fn get_drives() -> Result<ApiResponse<Vec<Drive>>, ApiError> {
         .collect();
 
     Ok(api_response!(drives))
+}
+
+#[tauri::command]
+pub fn get_entries() -> Result<ApiResponse<Vec<FSEntry>>, ApiError> {
+    Ok(api_response!(vec![]))
 }

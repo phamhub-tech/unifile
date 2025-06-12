@@ -2,7 +2,7 @@
   <div class="space-y-2">
     <h1 class="px- font-semibold">{{ $t("drives", 2) }}</h1>
     <div class="grid grid-cols-3 gap-4 xl:grid-cols-5">
-      <RouterLink
+      <NuxtLink
         v-for="drive of drives"
         :key="`drive-${drive.name}`"
         v-slot="{ navigate }"
@@ -10,8 +10,8 @@
           getRoute({
             name: 'drive-details',
             params: {
-              drivePath: drive.mountPoint,
-              path: pathSep,
+              drivePath: encodeURIComponent(drive.mountPoint),
+              path: encodeURIComponent(pathSep),
             },
           })
         "
@@ -42,7 +42,7 @@
             />
           </div>
         </div>
-      </RouterLink>
+      </NuxtLink>
     </div>
   </div>
 </template>

@@ -1,2 +1,2 @@
 pub mod api;
-mod types;
+mod models;

@@ -17,3 +17,5 @@ export interface IApiError {
 	message: string
 	data?: TApiErrorData
 }
+
+export type TSortType = 'asc' | 'desc' | undefined;

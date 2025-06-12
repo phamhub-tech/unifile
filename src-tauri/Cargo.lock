@@ -938,6 +938,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "file-format"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ff8badf6e72ff15e42c9ade15d01375837173b17d10c228ab41d821082619db"
+
+[[package]]
 name = "filetime"
 version = "0.2.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4234,6 +4240,7 @@ checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
 name = "unifile"
 version = "0.1.0"
 dependencies = [
+ "file-format",
  "notify",
  "serde",
  "serde_json",
