@@ -10,6 +10,11 @@ export default defineNuxtConfig({
   devServer: { host: host || "localhost", port: 4000 },
   telemetry: false,
   css: ['~/assets/css/main.css'],
+  routeRules: {
+    '/': {
+      redirect: '/drives'
+    }
+  },
 
   vite: {
     clearScreen: true,

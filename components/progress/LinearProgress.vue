@@ -8,6 +8,7 @@
           $attrs.class as string | undefined,
         )
       "
+      :style="{}"
       role="none"
     >
       <div
@@ -21,6 +22,7 @@
           width: `${value}%`,
           transformOrigin: 'left',
           transform: `scaleX(${scale})`,
+          backgroundColor: barColor,
         }"
       />
     </div>
@@ -56,11 +58,7 @@ const props = defineProps<IProps>();
 
 const barColor = computed<string>(() => {
   const value = props.value;
-  return value <= 80
-    ? "bg-blue-500"
-    : value <= 90
-      ? "bg-orange-500"
-      : "bg-red-500";
+  return value <= 80 ? "#2B7FFF" : value <= 90 ? "#ff6900" : "#FB2C36";
 });
 
 const scale = ref(0);

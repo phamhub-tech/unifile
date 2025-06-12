@@ -55,8 +55,8 @@ const routes: IGroupedRoute[] = [
     routes: [
       {
         icon: HomeIcon,
-        name: "Home",
-        route: getRouteFromName("home"),
+        name: "Explorer",
+        route: getRouteFromName("drives"),
       },
     ],
   },

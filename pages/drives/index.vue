@@ -19,7 +19,7 @@
       >
         <div
           :class="[
-            'hover:bg-primary/10 border',
+            'hover:bg-primary/5 border hover:border-primary/15',
             'flex gap-x-2 rounded-lg p-2 transition-colors',
           ]"
           role="button"
@@ -39,7 +39,6 @@
                   total: humanizeBytes(drive.total),
                 })
               "
-              class="bg-white"
             />
           </div>
         </div>
@@ -56,7 +55,7 @@ import { pathSep } from "~/core/constants";
 import { getRoute, humanizeBytes } from "~/core/utils";
 import { useFSStore } from "~/src/fs/store";
 
-definePageMeta({ name: "home" });
+definePageMeta({ name: "drives" });
 
 const store = useFSStore();
 const { drives } = storeToRefs(store);
