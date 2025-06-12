@@ -3,8 +3,12 @@ export interface IScanSettingsJson {
 	use_gitignore: boolean;
 }
 
+export type TTheme = "light" | "dark" | "system"
+
 export interface IAppSettingsJson {
-	scan: IScanSettingsJson
+	theme: string;
+	language: string;
+	scan: IScanSettingsJson;
 }
 
 export interface IScanSettings {
@@ -12,5 +16,7 @@ export interface IScanSettings {
 	useGitignore: boolean;
 }
 export interface IAppSettings {
+	theme: TTheme;
+	language: string;
 	scan: IScanSettings;
 }

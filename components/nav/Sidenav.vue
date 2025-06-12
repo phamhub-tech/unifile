@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-14 p-2">
+  <aside class="flex w-14 flex-col gap-y-3 p-2">
     <div
       v-for="(group, index) of routes"
       :key="`sidenav-link-group-${index}`"
@@ -11,13 +11,23 @@
         :to="r.route"
         active-class="bg-primary/20 font-medium"
         :class="[
-          'grid-centered block border border-transparent aspect-square',
+          'grid-centered block aspect-square border border-transparent',
           'hover:bg-primary/10 overflow-hidden rounded transition-all',
         ]"
       >
         <component :is="r.icon" class="w-6 shrink-0" />
       </NuxtLinkLocale>
     </div>
+
+    <ThemeButton
+      v-slot="{ icon }"
+      :class="[
+        'grid-centered mt-auto block aspect-square border border-transparent',
+        'hover:bg-primary/10 overflow-hidden rounded transition-all',
+      ]"
+    >
+      <component :is="icon" class="w-6 shrink-0" />
+    </ThemeButton>
   </aside>
 </template>
 

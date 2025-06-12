@@ -1,4 +1,4 @@
-import type { IAppSettings, IAppSettingsJson, IScanSettings, IScanSettingsJson } from "./types";
+import type { IAppSettings, IAppSettingsJson, IScanSettings, IScanSettingsJson, TTheme } from "./types";
 
 export * from './types';
 
@@ -30,13 +30,31 @@ export class ScanSettingsModel implements IScanSettings {
 }
 
 export class AppSettings implements IAppSettings {
+	public theme: TTheme;
+	public language: string;
 	public scan: IScanSettings;
 	constructor(data: IAppSettings) {
+		this.theme = data.theme;
+		this.language = data.language;
 		this.scan = data.scan;
 	}
 
 	static fromJson(json: IAppSettingsJson): AppSettings {
+		let theme: TTheme;
+		switch (json.theme) {
+			case 'system':
+				theme = 'system';
+				break;
+			case 'dark':
+				theme = 'dark';
+				break;
+			default:
+				theme = 'light'
+		}
+
 		return new AppSettings({
+			theme,
+			language: json.language,
 			scan: ScanSettingsModel.fromJson(json.scan)
 		})
 	}
@@ -44,6 +62,8 @@ export class AppSettings implements IAppSettings {
 	toJson(): IAppSettingsJson {
 		const scan = this.scan;
 		return {
+			theme: this.theme,
+			language: this.language,
 			scan: {
 				ignore_patterns: scan.ignorePatterns,
 				use_gitignore: scan.useGitignore,

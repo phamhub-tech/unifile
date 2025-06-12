@@ -126,6 +126,12 @@ impl AppSettingsManager {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AppSettings {
+    #[serde(default = "theme_default")]
+    pub theme: String,
+
+    #[serde(default = "language_default")]
+    pub language: String,
+
     #[serde(default)]
     pub scan: ScanSettings,
 }
@@ -133,6 +139,8 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         AppSettings {
+            theme: theme_default(),
+            language: language_default(),
             scan: ScanSettings::default(),
         }
     }
@@ -164,4 +172,12 @@ fn ignore_pattern_default() -> Vec<String> {
 
 fn bool_default() -> bool {
     true
+}
+
+fn theme_default() -> String {
+    "light".to_string()
+}
+
+fn language_default() -> String {
+    "en".to_string()
 }

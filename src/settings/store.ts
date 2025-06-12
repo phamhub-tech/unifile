@@ -1,6 +1,6 @@
 import { getApiMessage, TApiStatus } from '~/core/api'
 
-import { AppSettings } from './models/settings'
+import { AppSettings, type TTheme } from './models/settings'
 import { AppInfo } from './models/app-info'
 import { settingsService } from './service'
 
@@ -34,7 +34,7 @@ const state = (): IState => {
 	return {
 		appInfo: null,
 		languages,
-    activeLanguage: null,
+		activeLanguage: null,
 
 		settingsApiStatus: TApiStatus.default,
 		settingsApiMsg: '',
@@ -63,11 +63,11 @@ export const useSettingsStore = defineStore('settings', {
 			await this.getSettings()
 		},
 
-		// setTheme(theme: Theme | null) {
-		// 	const colorMode = useColorMode();
-		// 	colorMode.preference = theme ?? 'system';
-		// 	this.appInfo!.theme = theme;
-		// },
+		setTheme(theme: TTheme) {
+			const settings = this.settings!;
+			settings.theme = theme;
+			this.saveSettings(settings)
+		},
 
 		async getSettings() {
 			if (this.settings !== null) return;
@@ -78,6 +78,7 @@ export const useSettingsStore = defineStore('settings', {
 
 				const { data } = await settingsService.getSettings()
 				this.settings = AppSettings.fromJson(data);
+				this._syncTheme();
 
 				this.settingsApiStatus = TApiStatus.success;
 			} catch (e) {
@@ -92,6 +93,7 @@ export const useSettingsStore = defineStore('settings', {
 
 				await settingsService.saveSettings(settings.toJson())
 				this.settings = settings;
+				this._syncTheme();
 
 				this.saveSettingsApiStatus = TApiStatus.success
 			} catch (e) {
@@ -102,6 +104,20 @@ export const useSettingsStore = defineStore('settings', {
 
 		resetSettings() {
 			settingsService.resetSettings()
+		},
+
+		/**
+		 * Syncs the theme. Should not be called outside this store
+		 */
+		_syncTheme() {
+			const theme = this.settings?.theme;
+			if (theme === null) return;
+
+			if (theme === 'dark') {
+				document.documentElement.classList.add('dark');
+			} else {
+				document.documentElement.classList.remove('dark');
+			}
 		},
 
 		reset() {
