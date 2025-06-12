@@ -56,9 +56,9 @@ const props = defineProps<IProps>();
 
 const barColor = computed<string>(() => {
   const value = props.value;
-  return value <= 60
+  return value <= 80
     ? "bg-blue-500"
-    : value <= 80
+    : value <= 90
       ? "bg-orange-500"
       : "bg-red-500";
 });
