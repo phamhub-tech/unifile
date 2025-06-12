@@ -25,7 +25,7 @@
 import type { RouteLocationRaw } from "vue-router";
 
 import { HomeIcon } from "../icons/two-tone";
-import { getRouteFromName } from "~/_common/utils";
+import { getRouteFromName } from "~/core/utils";
 
 interface IRoute {
   icon: Component;

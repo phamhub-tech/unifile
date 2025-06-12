@@ -36,7 +36,9 @@ export default defineNuxtConfig({
     "shadcn-nuxt",
     "nuxt-typed-router",
     "@nuxtjs/i18n",
-    "@nuxt/eslint"
+    "@nuxt/eslint",
+    "@pinia/nuxt",
+    "@nuxt/fonts"
   ],
   i18n: {
     lazy: true,

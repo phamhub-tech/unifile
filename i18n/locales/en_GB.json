@@ -1,3 +1,4 @@
 {
-  "drives": "Drive | Drives"
+  "drives": "Drive | Drives",
+  "availableOutOf": "{available} free of {total}"
 }

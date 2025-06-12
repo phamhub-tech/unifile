@@ -13,9 +13,11 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@nuxt/eslint": "1.4.1",
     "@nuxt/fonts": "0.11.4",
     "@nuxt/icon": "1.13.0",
     "@nuxtjs/i18n": "9.5.5",
+    "@pinia/nuxt": "0.11.1",
     "@tailwindcss/vite": "^4.1.10",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
@@ -25,6 +27,7 @@
     "lucide-vue-next": "^0.514.0",
     "nuxt": "^3.17.5",
     "nuxt-typed-router": "4.0.1",
+    "pinia": "^3.0.3",
     "prettier": "^3.5.3",
     "reka-ui": "^2.3.1",
     "shadcn-nuxt": "2.2.0",
