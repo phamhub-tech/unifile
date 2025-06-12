@@ -5,8 +5,8 @@
   "identifier": "unifile",
   "build": {
     "beforeDevCommand": "pnpm dev",
-    "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "pnpm build",
+    "beforeBuildCommand": "pnpm generate",
+    "devUrl": "http://localhost:4000",
     "frontendDist": "../dist"
   },
   "app": {
