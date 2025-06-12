@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "unifile",
-  "version": "0.1.0",
-  "identifier": "unifile",
+  "productName": "Unifile",
+  "version": "0.0.1",
+  "identifier": "Unifile",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm generate",
@@ -13,9 +13,11 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "unifile",
-        "width": 800,
-        "height": 600
+        "title": "Unifile",
+        "width": 1000,
+        "height": 600,
+				"minWidth": 1000,
+				"minHeight": 600,
       }
     ],
     "security": {
