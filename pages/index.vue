@@ -19,7 +19,7 @@
       >
         <div
           :class="[
-            'border hover:bg-primary/10',
+            'hover:bg-primary/10 border',
             'flex gap-x-2 rounded-lg p-2 transition-colors',
           ]"
           role="button"
@@ -27,7 +27,10 @@
         >
           <DiskIcon class="shrink-0" :size="40" :stroke-width="1" />
           <div class="flex-1 space-y-2 truncate">
-            <p class="truncate">{{ drive.name }} ({{ drive.mountPoint }})</p>
+            <p class="truncate">
+              {{ drive.name }}
+              <span class="font-medium">({{ drive.mountPoint }})</span>
+            </p>
             <LinearProgress
               :value="(drive.used / drive.total) * 100"
               :info="
