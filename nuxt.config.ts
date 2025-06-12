@@ -1,3 +1,5 @@
+import tailwindcss from '@tailwindcss/vite';
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 const host = process.env.TAURI_DEV_HOST;
 
@@ -7,6 +9,8 @@ export default defineNuxtConfig({
   ssr: false,
   devServer: { host: host || "localhost", port: 4000 },
   telemetry: false,
+  css: ['~/assets/css/main.css'],
+
   vite: {
     clearScreen: true,
     envPrefix: ["VITE_", "TAURI_"],
@@ -14,14 +18,23 @@ export default defineNuxtConfig({
       strictPort: true,
       hmr: host
         ? {
-            protocol: "ws",
-            host,
-            port: 1421,
-          }
+          protocol: "ws",
+          host,
+          port: 1421,
+        }
         : undefined,
       watch: {
         ignored: ["**/src-tauri/**"],
       },
     },
+    plugins: [
+      tailwindcss(),
+    ]
   },
+
+  modules: ["shadcn-nuxt"],
+  shadcn: {
+    prefix: '',
+    componentDir: 'components/ui'
+  }
 });
