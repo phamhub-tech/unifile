@@ -1,4 +1,7 @@
 {
+  "extFileType": "{ext} File",
+  "folders": "Folder | Folders",
+  "files": "File | Files",
   "noItems": "No items found",
   "folderEmpty": "This folder is empty",
   "name": "Name",

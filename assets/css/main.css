@@ -124,6 +124,13 @@
     font-family: Manrope;
     @apply bg-background text-foreground select-none;
   }
+
+  table.styled {
+    th,
+    td {
+      padding: 0.5rem;
+    }
+  }
 }
 
 @layer utilities {

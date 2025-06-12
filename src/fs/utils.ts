@@ -62,8 +62,8 @@ export function getHexForFileType(type: TFileType): { light: string, dark: strin
       darkHex = '#94a3b8';
       break;
     default:
-      lightHex = 'hsl(var(--primary) / .2)'
-      darkHex = 'hsl(var(--primary)'
+      lightHex = '#e2e8f0'
+      darkHex = '#94a3b8'
   }
 
   return {

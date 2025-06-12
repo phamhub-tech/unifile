@@ -1,5 +1,5 @@
 <template>
-  <section class="sticky top-0 z-10 border-b pr-4">
+  <section class="sticky bg-background -top-[1px] z-10 border-y pr-4">
     <div class="flex items-center gap-x-2 overflow-x-auto">
       <template
         v-for="({ name, path, isRoot }, i) of pathSplit"
@@ -19,7 +19,7 @@
         >
           <div
             :class="[
-              'text-sm px-4 py-3 whitespace-nowrap opacity-80 hover:opacity-100',
+              'px-4 py-3 text-sm whitespace-nowrap opacity-80 hover:opacity-100',
               'hover:bg-primary/10 transition-colors outline-none',
               'focus:bg-primary/10',
             ]"
@@ -54,6 +54,7 @@
       {
         label: $t('name'),
         value: 'name',
+        key: 'name',
         itemClass: 'w-[1%] whitespace-nowrap max-w-xl !pr-10 overflow-ellipsis',
       },
       {
@@ -65,6 +66,7 @@
       {
         label: $t('type'),
         value: 'type',
+        key: 'type',
         itemClass: 'opacity-60',
       },
       {
@@ -81,18 +83,18 @@
     @item-click="selectEntry"
   >
     <template
-      #list-item-value="{ itemKey, item: { type, extension, name, fileType } }"
+      #list-item-value="{ key, item: { type, extension, name, fileType } }"
     >
-      <template v-if="itemKey === 'type'">
+      <template v-if="key === 'type'">
         <p v-if="type === TFileSystemEntryType.folder">
-          {{ $t(`entryTypes.${type}`) }}
+          {{ $t("folders") }}
         </p>
         <p v-else-if="type === TFileSystemEntryType.file">
           {{ $t("extFileType", { ext: extension.toUpperCase() }) }}
         </p>
       </template>
 
-      <div v-if="itemKey === 'name'" class="flex items-center gap-x-2 truncate">
+      <div v-if="key === 'name'" class="flex items-center gap-x-2 truncate">
         <component
           :is="
             type === TFileSystemEntryType.folder
@@ -103,7 +105,7 @@
           :class="[
             'shrink-0',
             type === TFileSystemEntryType.folder
-              ? 'fill-green-300 stroke-green-600'
+              ? 'fill-yellow-300 stroke-yellow-500'
               : null,
           ]"
           :style="
@@ -130,7 +132,7 @@ import {
 import { pathSep } from "~/core/constants";
 import { getRoute, getRouteFromName, humanizeBytes } from "~/core/utils";
 
-import { DriveModel } from "../models/drive";
+import type { DriveModel } from "../models/drive";
 import { useFSStore } from "../store";
 import type FileSystemEntryModel from "../models/entry";
 import { TFileSystemEntryType } from "../models/entry";
@@ -200,6 +202,60 @@ getEntries();
 function getEntries() {
   const path = currentPath.value;
   store.getEntries(path);
+}
+
+const selectedEntries = ref(new Set<string>());
+let timeout: number | null = null;
+const clicks = ref(0);
+async function selectEntry(
+  entry: FileSystemEntryModel,
+  event: MouseEvent | KeyboardEvent,
+) {
+  clicks.value++;
+  event.preventDefault();
+  clearSelectTimeout();
+
+  if (event instanceof KeyboardEvent || clicks.value === 2) {
+    await browseEntry(entry);
+    selectedEntries.value.delete(entry.path);
+    clicks.value = 0;
+    return;
+  }
+  
+  // For now assume we can't do multi entries
+  selectedEntries.value.clear();
+
+  // Assume this is a selection
+  selectedEntries.value.add(entry.path);
+
+  // if (!isSelectingMultiple.value) {
+  //   selectedEntries.value.clear();
+  // }
+
+  // Reset the clicks after some time so that double clicks should happen within a short interval
+  timeout = window.setTimeout(() => {
+    clicks.value = 0;
+  }, 400);
+}
+function clearSelectTimeout() {
+  if (timeout) clearTimeout(timeout);
+}
+
+async function browseEntry(entry: FileSystemEntryModel) {
+  if (entry.isFile) return;
+
+  const drivePath = props.drive.mountPoint;
+  const path = entry.path.replace(drivePath, "");
+  // router.push({ name: 'drive-details', params: { drivePath: drivePath, path } })
+  return navigateTo(
+    getRoute({
+      name: "drive-details",
+      params: {
+        drivePath: encodeURIComponent(drivePath),
+        path: encodeURI(path),
+      },
+    }),
+  );
 }
 
 function clearScan() {}

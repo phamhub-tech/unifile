@@ -4,7 +4,7 @@
     :class="
       cn(
         'bg-white dark:bg-white/[0.025]',
-				'p-3 pb-0.5',
+        'p-3 pb-0.5',
         $attrs.class as string | undefined,
       )
     "
@@ -21,7 +21,7 @@
               <div
                 :class="
                   twMerge(
-                    'flex items-center tracking-wider font-semibold smallcaps gap-x-1',
+                    'smallcaps flex items-center gap-x-1 font-semibold tracking-wider',
                     header.sort !== undefined && 'cursor-pointer select-none',
                     (contentAlignment(header.align) === 'center' ||
                       (header.isDate &&
@@ -51,8 +51,11 @@
         </thead>
         <tbody ref="itemsList">
           <tr v-if="filteredItems.length === 0">
-            <td :colspan="headers.length" class="text-center text-muted-foreground !pt-8">
-              {{ noItemsText ?? $t('noItems')}}
+            <td
+              :colspan="headers.length"
+              class="text-muted-foreground !pt-8 text-center"
+            >
+              {{ noItemsText ?? $t("noItems") }}
             </td>
           </tr>
           <template v-else>
@@ -63,11 +66,10 @@
                 'border-y border-slate-200 dark:border-slate-200/10',
                 { 'last:border-y-transparent': !hasFooter },
                 isItemSelected && isItemSelected(item)
-                  ? 'bg-primary/[0.15] text-primary-dark'
-                  : isItemClickable(item) &&
-                    'cursor-pointer hover:bg-primary/5',
+                  ? 'bg-primary/10 text-primary-dark'
+                  : isItemClickable(item) && 'hover:bg-primary/5',
               ]"
-              @click="isItemClickable(item) && onItemClick!(item)"
+              @click="isItemClickable(item) && onItemClick!(item, $event)"
             >
               <td
                 v-for="(header, j) of headers"
@@ -113,10 +115,7 @@
 </template>
 
 <script setup lang="ts" generic="T">
-import {
-  MoveUpIcon,
-  MoveDownIcon,
-} from "lucide-vue-next";
+import { MoveUpIcon, MoveDownIcon } from "lucide-vue-next";
 import { twMerge } from "tailwind-merge";
 
 import { humanizeDate, removeFromAttrs } from "~/core/utils";
@@ -147,7 +146,7 @@ const props = withDefaults(
     inputClass?: string;
     isItemSelected?: (item: T) => boolean;
     canClickItem?: (item: T) => boolean;
-    onItemClick?: (item: T) => void;
+    onItemClick?: (item: T, event: MouseEvent) => void;
     onRefresh?: () => void;
   }>(),
   {
@@ -166,7 +165,7 @@ const emit = defineEmits<{
 }>();
 
 const attrs = useAttrs();
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const attrsToBind = computed<Record<string, any>>(() => {
   return removeFromAttrs(attrs, "class");
 });
@@ -228,11 +227,11 @@ function sortHeader(header: IHeader<T>) {
 }
 
 function getItemValue(
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   item: any,
   key: IHeader<T>["value"],
   formatAsDate?: boolean,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   if (typeof key === "function") {
     const value = key(item as T);

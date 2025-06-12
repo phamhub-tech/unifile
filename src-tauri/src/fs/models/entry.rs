@@ -1,3 +1,5 @@
+use std::{fs, path::Path};
+
 use file_format::{FileFormat, Kind};
 use serde::Serialize;
 
@@ -38,7 +40,7 @@ pub enum FileType {
     Other,
 }
 impl FileType {
-    pub fn from_file_path(path: &str) -> Option<Self> {
+    pub fn from_file_path<P: AsRef<Path>>(path: &P) -> Option<Self> {
         let file_kind = match FileFormat::from_file(&path) {
             Ok(kind) => kind.kind(),
             Err(_) => return Some(FileType::Other),
@@ -70,38 +72,38 @@ pub struct FSEntry {
     pub modified: Option<String>,
 }
 impl FSEntry {
-    // pub fn from_entry(entry: &walkdir::DirEntry) -> Result<Self, std::io::Error> {
-    //     let entry_type = match entry.file_type().is_dir() {
-    //         true => FSEntryType::Folder,
-    //         false => FSEntryType::File,
-    //     };
-    //     let path = get_entry_path(&entry);
+    pub fn from_entry(entry: &ignore::DirEntry) -> Result<Self, std::io::Error> {
+        let entry_type = match entry.file_type().expect("File has no path: {entry}").is_dir() {
+            true => FSEntryType::Folder,
+            false => FSEntryType::File,
+        };
+        let path = entry.path();
 
-    //     let metadata = fs::metadata(&path)?;
-    //     let created = match metadata.created() {
-    //         Ok(time) => {
-    //             let datetime: chrono::DateTime<chrono::Local> = time.into();
-    //             Some(format!("{}", datetime))
-    //         }
-    //         Err(_) => None,
-    //     };
-    //     let modified = match metadata.modified() {
-    //         Ok(time) => {
-    //             let datetime: chrono::DateTime<chrono::Local> = time.into();
-    //             Some(datetime.to_rfc3339())
-    //         }
-    //         Err(_) => None,
-    //     };
-    //     let file_type = FileType::from_file_path(&path);
+        let metadata = fs::metadata(&path)?;
+        let created = match metadata.created() {
+            Ok(time) => {
+                let datetime: chrono::DateTime<chrono::Local> = time.into();
+                Some(format!("{}", datetime))
+            }
+            Err(_) => None,
+        };
+        let modified = match metadata.modified() {
+            Ok(time) => {
+                let datetime: chrono::DateTime<chrono::Local> = time.into();
+                Some(datetime.to_rfc3339())
+            }
+            Err(_) => None,
+        };
+        let file_type = FileType::from_file_path(&path);
 
-    //     Ok(Self {
-    //         name: get_entry_name(entry),
-    //         path,
-    //         size: metadata.len(),
-    //         file_type,
-    //         created,
-    //         modified,
-    //         entry_type,
-    //     })
-    // }
+        Ok(Self {
+            name: entry.file_name().to_string_lossy().to_string(),
+            path: path.to_string_lossy().to_string(),
+            size: metadata.len(),
+            file_type,
+            created,
+            modified,
+            entry_type,
+        })
+    }
 }
