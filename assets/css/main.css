@@ -117,7 +117,16 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
+  html,
   body {
+    font-size: 14px;
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .grid-centered {
+    @apply grid place-items-center;
   }
 }

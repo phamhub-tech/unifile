@@ -32,7 +32,21 @@ export default defineNuxtConfig({
     ]
   },
 
-  modules: ["shadcn-nuxt"],
+  modules: [
+    "shadcn-nuxt",
+    "nuxt-typed-router",
+    "@nuxtjs/i18n",
+    "@nuxt/eslint"
+  ],
+  i18n: {
+    lazy: true,
+    defaultLocale: 'en',
+    compilation: {
+      strictMessage: false,
+      escapeHtml: false,
+    },
+    locales: [{ code: 'en', language: 'en-GB', file: 'en_GB.json' }],
+  },
   shadcn: {
     prefix: '',
     componentDir: 'components/ui'
