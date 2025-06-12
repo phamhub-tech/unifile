@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: false,
   devServer: { host: host || "localhost", port: 4000 },
+  telemetry: false,
   vite: {
     clearScreen: true,
     envPrefix: ["VITE_", "TAURI_"],
