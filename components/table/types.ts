@@ -3,7 +3,7 @@ import type { TSortType } from "~/core/api"
 export type TDataTableAlignment = 'left' | 'center' | 'right'
 export interface IHeader<T> {
 	label: string;
-	value: (keyof T | Omit<string, keyof T | number | symbol>) | ((item: T) => string | number | null);
+	value: (keyof T | (string & {})) | ((item: T) => string | number | null);
 	sort?: TSortType | null;
 	classes?: string;
 	itemClass?: string | ((item: T) => string);

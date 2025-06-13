@@ -56,6 +56,8 @@ export const useSettingsStore = defineStore('settings', {
 		// },
 
 		async init() {
+			settingsService.checkUpdate();
+
 			const info = new AppInfo();
 			await info.build();
 			this.appInfo = info;

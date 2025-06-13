@@ -1,6 +1,6 @@
 <template>
   <div v-if="drive !== null">
-    <section class="shadow-primary/10 pt-2 bg-background px-4 py-4">
+    <section class="shadow-primary/10 pt-2 bg-background py-2">
       <h1>
         {{ drive.name }}
         <span class="text-muted-foreground mt-1 mb-2">
@@ -33,6 +33,8 @@ import { LinearProgress } from "~/components/progress";
 import Explorer from "~/src/fs/components/Explorer.vue";
 
 definePageMeta({ name: "drive-details" });
+
+onMounted(() => {console.log('Page Mounted')})
 
 const store = useFSStore();
 const { drives, drive } = storeToRefs(store);

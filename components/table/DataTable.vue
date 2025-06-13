@@ -3,8 +3,7 @@
     v-bind="attrsToBind"
     :class="
       cn(
-        'bg-white dark:bg-white/[0.025]',
-        'p-3 pb-0.5',
+        'bg-background',
         $attrs.class as string | undefined,
       )
     "
@@ -21,7 +20,7 @@
               <div
                 :class="
                   twMerge(
-                    'smallcaps flex items-center gap-x-1 font-semibold tracking-wider',
+                    'smallcaps flex items-center gap-x-1 font-medium text-sm tracking-wider',
                     header.sort !== undefined && 'cursor-pointer select-none',
                     (contentAlignment(header.align) === 'center' ||
                       (header.isDate &&

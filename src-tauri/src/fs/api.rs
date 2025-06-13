@@ -1,10 +1,14 @@
 use std::io::ErrorKind;
 
 use ignore::WalkBuilder;
+use tauri::ipc::Channel;
 
 use crate::api::{ApiError, ApiResponse};
+use crate::fs::models::scan::ScanEvent;
 use crate::fs::models::{drive::Drive, entry::FSEntry};
 use crate::{api_error, api_response};
+
+use super::controllers;
 
 #[tauri::command]
 pub fn get_drives() -> Result<ApiResponse<Vec<Drive>>, ApiError> {
@@ -62,6 +66,20 @@ pub fn get_entries(path: String) -> Result<ApiResponse<Vec<FSEntry>>, ApiError> 
         return Err(api_error!(message));
     }
 
-        Ok(api_response!(entries, message, has_error))
-    
+    Ok(api_response!(entries, message, has_error))
+}
+
+#[tauri::command]
+pub async fn scan_path(
+    path: String,
+    on_event: Channel<ScanEvent>,
+) -> Result<ApiResponse<Option<()>>, ApiError> {
+    on_event.send(ScanEvent::Started {}).unwrap();
+
+    controllers::scan_path(path, |entry| {
+        on_event.send(ScanEvent::Progress { entry }).unwrap();
+    });
+
+    on_event.send(ScanEvent::Finished {}).unwrap();
+    Ok(api_response!(None))
 }

@@ -3,7 +3,7 @@ use std::{fs, path::Path};
 use file_format::{FileFormat, Kind};
 use serde::Serialize;
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum FSEntryType {
     #[serde(rename = "folder")]
     Folder,
@@ -61,7 +61,7 @@ impl FileType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct FSEntry {
     pub size: u64,
     pub file_type: Option<FileType>,
@@ -73,10 +73,6 @@ pub struct FSEntry {
 }
 impl FSEntry {
     pub fn from_entry(entry: &ignore::DirEntry) -> Result<Self, std::io::Error> {
-        let entry_type = match entry.file_type().expect("File has no path: {entry}").is_dir() {
-            true => FSEntryType::Folder,
-            false => FSEntryType::File,
-        };
         let path = entry.path();
 
         let metadata = fs::metadata(&path)?;
@@ -94,7 +90,17 @@ impl FSEntry {
             }
             Err(_) => None,
         };
-        let file_type = FileType::from_file_path(&path);
+
+        let mut entry_type = FSEntryType::Folder;
+        let mut file_type = None; // Folders don't have file types
+        if entry
+            .file_type()
+            .expect("File has no path: {entry}")
+            .is_file()
+        {
+            file_type = FileType::from_file_path(&path);
+            entry_type = FSEntryType::File;
+        }
 
         Ok(Self {
             name: entry.file_name().to_string_lossy().to_string(),

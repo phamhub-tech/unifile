@@ -5,6 +5,7 @@ import { TApiStatus, getApiMessage } from "@/core/api"
 import { DriveModel } from "./models/drive"
 import { fsService } from "./service"
 import FileSystemEntryModel from "./models/entry";
+import type { IScanEntry } from "./models/scan/types";
 
 interface IState {
 	getDrivesApiStatus: TApiStatus;
@@ -22,6 +23,11 @@ interface IState {
 
 	getEntriesApiStatus: TApiStatus;
 	getEntriesApiMsg: string;
+
+	scanPathApiStatus: TApiStatus;
+	scanPathApiMsg: string;
+	scanEntries: Record<string, IScanEntry> | null;
+	currentFile: string | null;
 }
 const state = (): IState => ({
 	getDrivesApiStatus: TApiStatus.default,
@@ -33,6 +39,11 @@ const state = (): IState => ({
 	getEntriesApiStatus: TApiStatus.default,
 	getEntriesApiMsg: '',
 	entries: {},
+
+	scanPathApiStatus: TApiStatus.default,
+	scanPathApiMsg: '',
+	scanEntries: null,
+	currentFile: null,
 })
 
 export const useFSStore = defineStore('home', {
@@ -83,5 +94,57 @@ export const useFSStore = defineStore('home', {
 				this.getEntriesApiMsg = getApiMessage(e)
 			}
 		},
+		async scanPath(path: string) {
+			try {
+				this.scanPathApiStatus = TApiStatus.loading;
+				this.scanPathApiMsg = '';
+				this.clearScan(false);
+
+				await fsService.scanPath(path, (event) => {
+					if (event.event === 'progress') {
+						const scanEntries = Object.assign({}, toRaw(this.scanEntries ?? {}));
+						const entry = FileSystemEntryModel.fromJson(event.data.entry);
+						const scanEntry: IScanEntry | undefined = scanEntries[entry.name];
+						if (scanEntry) {
+							scanEntry.totalSize += entry.size;
+							scanEntry.duplicates.push(entry);
+							scanEntries[scanEntry.name] = scanEntry;
+						} else {
+							scanEntries[entry.name] = {
+								name: entry.name,
+								totalSize: entry.size,
+								fileType: entry.fileType,
+								// Set this entry as a duplicate since when showing duplicates this entry should be included
+								duplicates: [entry],
+							}
+						}
+						
+						this.currentFile = entry.path;
+						this.scanEntries = scanEntries;
+					}
+
+					if (event.event === 'finished') {
+						this.currentFile = null;
+					}
+				});
+
+				this.scanPathApiStatus = TApiStatus.success;
+			} catch (e) {
+				this.scanPathApiStatus = TApiStatus.error;
+				this.scanPathApiMsg = getApiMessage(e);
+				console.error(e);
+			}
+		},
+
+		clearScan(reset = true) {
+			// this.scanSize = 0;
+
+			if (reset) {
+				this.scanEntries = null;
+				return
+			}
+
+			this.scanEntries = {}
+		}
 	}
 })

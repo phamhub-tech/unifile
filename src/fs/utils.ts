@@ -4,12 +4,19 @@ import {
   ImageIcon,
   MusicIcon as AudioIcon,
   VideoIcon,
+  FolderIcon,
 } from 'lucide-vue-next'
 
 import { TFileType } from "./models/entry";
 
+/**
+ * Gets the `TFileType` from the given `type`
+ * 
+ * @param type The raw file type string
+ * @returns The typed TFileType
+ */
 export function getFileTypeFromJson(type: string): TFileType {
-  let fileType = TFileType.other
+  let fileType = TFileType.other;
   switch (type) {
     case 'app':
       fileType = TFileType.app
@@ -34,7 +41,14 @@ export function getFileTypeFromJson(type: string): TFileType {
   return fileType;
 }
 
-export function getHexForFileType(type: TFileType): { light: string, dark: string } {
+export function getHexForFileType(type: TFileType | null): { light: string, dark: string } {
+  if (type === null) {
+    return {
+      light: 'oklch(90.5% 0.182 98.111)',
+      dark: 'oklch(79.5% 0.184 86.047)'
+    }
+  }
+
   let lightHex = ''
   let darkHex = ''
 
@@ -72,7 +86,18 @@ export function getHexForFileType(type: TFileType): { light: string, dark: strin
   }
 }
 
-export function getIconForFileType(type: TFileType): Component {
+/**
+ * Gets the icon for this file or folder.
+ * 
+ * If the type is null, then it is assumed this is a folder.
+ * 
+ * @param type The file type
+ * @returns The corresponding icon
+ */
+export function getIconForFileType(type: TFileType | null): Component {
+  if (type === null) return FolderIcon;
+
+
   switch (type) {
     case TFileType.archive:
       return ArchiveIcon
@@ -87,7 +112,7 @@ export function getIconForFileType(type: TFileType): Component {
   }
 }
 
-export function getStylesForFileType(type: TFileType): string {
+export function getStylesForFileType(type: TFileType | null): string {
   const { light, dark } = getHexForFileType(type)
   let styles = `fill: ${light} !important; stroke: ${dark} !important;`
 
