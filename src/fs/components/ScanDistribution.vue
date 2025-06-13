@@ -1,8 +1,8 @@
 <template>
-  <div v-if="scanEntries" class="space-y-3 rounded-md border p-3 mt-8">
+  <div v-if="scanEntries" class="space-y-4 rounded-md border p-3 mt-8">
     <div class="">
       <h2 class="text-sm font-medium">{{ $t("usedSpaceDistribution") }}</h2>
-      <p class="text-muted-foreground">
+      <p class="">
         {{
           $t("xOfY", {
             x: humanizeBytes(scanSize),
@@ -30,6 +30,8 @@
         </p>
       </template>
     </ProgressCompoundLinearProgress>
+
+    <p class="text-sm text-muted-foreground text-ellipsis">{{ currentFile }}</p>
   </div>
 </template>
 
@@ -44,7 +46,7 @@ import { getHexForFileType } from "../utils";
 const props = defineProps<{ drive: DriveModel }>();
 
 const store = useFSStore();
-const { scanEntries } = storeToRefs(store);
+const { scanEntries, currentFile } = storeToRefs(store);
 
 const scanSize = computed<number>(() => {
   return Object.values(scanEntries.value!).reduce(

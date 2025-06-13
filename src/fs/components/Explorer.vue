@@ -51,15 +51,16 @@
     </div>
 
     <div class="flex gap-x-2">
-      <Transition name="fade">
-        <AppTooltip v-if="scanEntries" :tooltip="$t('clearScanTooltip')">
-          <Button variant="destructive-tonal" @click="clearScan">
-            <ClearIcon />
-            {{ $t("clear") }}
-          </Button>
-        </AppTooltip>
-      </Transition>
-      <AppTooltip :tooltip="$t('scanTooltip')" :disabled="apiHandle.isLoading.value">
+      <AppTooltip v-if="scanEntries" :tooltip="$t('clearScanTooltip')">
+        <Button variant="destructive-tonal" @click="clearScan">
+          <ClearIcon />
+          {{ $t("clear") }}
+        </Button>
+      </AppTooltip>
+      <AppTooltip
+        :tooltip="$t('scanTooltip')"
+        :disabled="apiHandle.isLoading.value"
+      >
         <Button
           :loading="apiHandle.isLoading.value"
           variant="tonal"

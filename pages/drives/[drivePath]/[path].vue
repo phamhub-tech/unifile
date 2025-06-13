@@ -34,6 +34,8 @@ import Explorer from "~/src/fs/components/Explorer.vue";
 
 definePageMeta({ name: "drive-details" });
 
+onMounted(() => {console.log('Page Mounted')})
+
 const store = useFSStore();
 const { drives, drive } = storeToRefs(store);
 watch(drives, getDrive);

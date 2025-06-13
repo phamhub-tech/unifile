@@ -28,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
         buttonVariants({ variant, size }),
         props.class,
         loading &&
-          'pointer-events-none text-transparent grayscale transition-colors',
+          'pointer-events-none !text-transparent grayscale transition-colors',
       )
     "
   >

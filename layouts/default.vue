@@ -4,7 +4,7 @@
 
     <main
       :class="[
-        'flex-1 px-2 pb-20 overflow-y-auto',
+        'flex-1 px-2 pb-20 overflow-y-scroll',
         'border border-black/10',
         'dark:bg-background bg-white',
       ]"

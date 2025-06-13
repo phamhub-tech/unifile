@@ -27,7 +27,7 @@ interface IState {
 	scanPathApiStatus: TApiStatus;
 	scanPathApiMsg: string;
 	scanEntries: Record<string, IScanEntry> | null;
-	scanStats: object | null;
+	currentFile: string | null;
 }
 const state = (): IState => ({
 	getDrivesApiStatus: TApiStatus.default,
@@ -43,7 +43,7 @@ const state = (): IState => ({
 	scanPathApiStatus: TApiStatus.default,
 	scanPathApiMsg: '',
 	scanEntries: null,
-	scanStats: null,
+	currentFile: null,
 })
 
 export const useFSStore = defineStore('home', {
@@ -118,8 +118,13 @@ export const useFSStore = defineStore('home', {
 								duplicates: [entry],
 							}
 						}
-
+						
+						this.currentFile = entry.path;
 						this.scanEntries = scanEntries;
+					}
+
+					if (event.event === 'finished') {
+						this.currentFile = null;
 					}
 				});
 
@@ -135,12 +140,10 @@ export const useFSStore = defineStore('home', {
 			// this.scanSize = 0;
 
 			if (reset) {
-				this.scanStats = null;
 				this.scanEntries = null;
 				return
 			}
 
-			this.scanStats = []
 			this.scanEntries = {}
 		}
 	}
