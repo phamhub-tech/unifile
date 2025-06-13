@@ -4,7 +4,6 @@
     :class="
       cn(
         'bg-white dark:bg-white/[0.025]',
-        'p-3 pb-0.5',
         $attrs.class as string | undefined,
       )
     "

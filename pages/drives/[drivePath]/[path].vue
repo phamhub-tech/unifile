@@ -1,6 +1,6 @@
 <template>
   <div v-if="drive !== null">
-    <section class="shadow-primary/10 pt-2 bg-background px-4 py-4">
+    <section class="shadow-primary/10 pt-2 bg-background py-2">
       <h1>
         {{ drive.name }}
         <span class="text-muted-foreground mt-1 mb-2">

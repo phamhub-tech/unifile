@@ -1,5 +1,7 @@
 <template>
-  <section class="sticky bg-background -top-[1px] z-10 border-y pr-4">
+  <section
+    class="bg-background sticky -top-[1px] z-10 flex items-center justify-between gap-x-4 border-y py-1"
+  >
     <div class="flex items-center gap-x-2 overflow-x-auto">
       <template
         v-for="({ name, path, isRoot }, i) of pathSplit"
@@ -12,16 +14,20 @@
               ? getRouteFromName('drives')
               : getRoute({
                   name: 'drive-details',
-                  params: { drivePath: drive.mountPoint, path },
+                  params: {
+                    drivePath: encodeURIComponent(drive.mountPoint),
+                    path: encodeURIComponent(path),
+                  },
                 })
           "
           custom
         >
           <div
             :class="[
-              'px-4 py-3 text-sm whitespace-nowrap opacity-80 hover:opacity-100',
-              'hover:bg-primary/10 transition-colors outline-none',
+              'rounded py-1 text-sm whitespace-nowrap opacity-80 hover:opacity-100',
+              'transition-colors outline-none',
               'focus:bg-primary/10',
+              isRoot ? 'px-1' : 'hover:bg-primary/10 px-2',
             ]"
             role="button"
             tabindex="0"
@@ -43,9 +49,33 @@
         </NuxtLink>
       </template>
     </div>
+
+    <div class="flex gap-x-2">
+      <Transition name="fade">
+        <div v-if="scanEntries">
+          <AppTooltip :tooltip="$t('clearScanTooltip')">
+            <Button variant="destructive-tonal" @click="clearScan">
+              <ClearIcon />
+              {{ $t("clear") }}
+            </Button>
+          </AppTooltip>
+        </div>
+      </Transition>
+      <AppTooltip :tooltip="$t('scanTooltip')">
+        <Button
+          :loading="apiHandle.isLoading.value"
+          variant="tonal"
+          @click="scanPath(currentPath)"
+        >
+          <ScanIcon />
+          {{ $t("scan") }}
+        </Button>
+      </AppTooltip>
+    </div>
   </section>
 
   <TableDataTable
+    v-if="!scanEntries"
     align="left"
     class="border-t-0 select-none"
     :has-header="false"
@@ -96,34 +126,21 @@
 
       <div v-if="key === 'name'" class="flex items-center gap-x-2 truncate">
         <component
-          :is="
-            type === TFileSystemEntryType.folder
-              ? FolderIcon
-              : getIconForFileType(fileType!)
-          "
+          :is="getIconForFileType(fileType)"
           :size="20"
-          :class="[
-            'shrink-0',
-            type === TFileSystemEntryType.folder
-              ? 'fill-yellow-300 stroke-yellow-500'
-              : null,
-          ]"
-          :style="
-            type === TFileSystemEntryType.file
-              ? getStylesForFileType(fileType!)
-              : null
-          "
+          :style="getStylesForFileType(fileType)"
+          class="shrink-0"
         />
         <p class="truncate">{{ name }}</p>
       </div>
     </template>
   </TableDataTable>
+  <ScanResults v-else :scan-entries="scanEntries" class="mt-2" />
 </template>
 
 <script setup lang="ts">
 import {
   ChevronRightIcon,
-  FolderIcon,
   MonitorIcon as RootIcon,
   ScanLineIcon as ScanIcon,
   Trash2Icon as ClearIcon,
@@ -137,11 +154,20 @@ import { useFSStore } from "../store";
 import type FileSystemEntryModel from "../models/entry";
 import { TFileSystemEntryType } from "../models/entry";
 import { getIconForFileType, getStylesForFileType } from "../utils";
+import { useApiHandle } from "~/core/api";
+import ScanResults from "./ScanResults.vue";
 
 const props = defineProps<{ drive: DriveModel }>();
 
 const store = useFSStore();
-const { entries: allEntries } = storeToRefs(store);
+const {
+  entries: allEntries,
+  scanPathApiStatus: apiStatus,
+  scanPathApiMsg: apiMsg,
+  scanEntries,
+  x,
+} = storeToRefs(store);
+const apiHandle = useApiHandle(apiStatus);
 
 const route = useRoute();
 watch(route, getEntries);
@@ -204,6 +230,13 @@ function getEntries() {
   store.getEntries(path);
 }
 
+function scanPath(path: string) {
+  store.scanPath(path);
+}
+function clearScan() {
+  store.clearScan();
+}
+
 const selectedEntries = ref(new Set<string>());
 let timeout: number | null = null;
 const clicks = ref(0);
@@ -221,7 +254,7 @@ async function selectEntry(
     clicks.value = 0;
     return;
   }
-  
+
   // For now assume we can't do multi entries
   selectedEntries.value.clear();
 
@@ -257,6 +290,4 @@ async function browseEntry(entry: FileSystemEntryModel) {
     }),
   );
 }
-
-function clearScan() {}
 </script>

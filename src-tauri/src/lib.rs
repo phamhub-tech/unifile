@@ -20,6 +20,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             fs::api::get_drives,
             fs::api::get_entries,
+            fs::api::scan_path,
             settings::api::get_settings,
             settings::api::save_settings,
         ])

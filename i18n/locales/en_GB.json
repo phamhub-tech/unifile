@@ -1,4 +1,10 @@
 {
+  "path": "Path",
+  "duplicatesFound": "Found 1 duplicate | Found {count} duplicates",
+  "clear": "Clear",
+  "scan": "Scan",
+  "scanTooltip": "Scan this folder",
+  "clearScanTooltip": "Clear scan results",
   "extFileType": "{ext} File",
   "folders": "Folder | Folders",
   "files": "File | Files",
