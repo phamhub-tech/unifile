@@ -8,6 +8,7 @@
 		"video": "Video | Videos",
 		"other": "Other | Others"
 	},
+  "updateError": "Update error",
   "usedSpaceDistribution": "Used space distribution",
   "usedSpacePercent": "{percent}% of used disk space",
   "xOfY": "{x} of {y}",

@@ -146,7 +146,7 @@
   body {
     font-size: 14px;
     font-family: Manrope;
-    @apply bg-background text-foreground select-none;
+    @apply bg-background text-foreground select-none overscroll-none;
   }
 
   table.styled {
