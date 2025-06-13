@@ -3,7 +3,7 @@
     v-bind="attrsToBind"
     :class="
       cn(
-        'bg-white dark:bg-white/[0.025]',
+        'bg-background',
         $attrs.class as string | undefined,
       )
     "

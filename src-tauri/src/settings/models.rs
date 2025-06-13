@@ -46,7 +46,7 @@ impl AppSettingsManager {
     ///
     /// The current settings will be updated by the watcher, not this function
     pub fn save(&self, new_settings: &AppSettings) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Saving new settings: {:?}", new_settings);
+        println!("Saving new settings...");
 
         // TODO: Handle errors properly
         let content = serde_json::to_string_pretty(new_settings)?;
@@ -110,10 +110,8 @@ impl AppSettingsManager {
                             continue;
                         }
 
-                        println!("Received modify event: {:?}", kind);
                         if let Ok(new_settings) = Self::load_from_file(&path) {
                             let mut settings = settings_clone.lock().unwrap();
-                            println!("Update new settings: {:?}", new_settings);
                             *settings = new_settings;
                         }
                     }

@@ -1,5 +1,8 @@
 <template>
-  <div v-if="scanEntries" class="space-y-4 rounded-md border p-3 mt-8">
+  <div
+    v-if="scanEntries"
+    class="bg-background mt-8 space-y-4 rounded-md border p-3 dark:bg-gray-800"
+  >
     <div class="">
       <h2 class="text-sm font-medium">{{ $t("usedSpaceDistribution") }}</h2>
       <p class="">
@@ -31,7 +34,9 @@
       </template>
     </ProgressCompoundLinearProgress>
 
-    <p class="text-sm text-muted-foreground text-ellipsis">{{ currentFile }}</p>
+    <p class="text-muted-foreground truncate text-sm">
+      {{ currentFile }}
+    </p>
   </div>
 </template>
 
@@ -82,9 +87,11 @@ const distribution = computed<IDistribution[]>(() => {
     };
   }
 
-  return Object.entries(dis).map(([fileType, stat]) => ({
-    type: fileType as TFileType,
-    ...stat,
-  })).sort((a, b) => b.size - a.size);
+  return Object.entries(dis)
+    .map(([fileType, stat]) => ({
+      type: fileType as TFileType,
+      ...stat,
+    }))
+    .sort((a, b) => b.size - a.size);
 });
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <aside class="flex w-14 flex-col gap-y-3 p-2">
+  <aside class="flex w-14 flex-col gap-y-3 p-2 bg-gray-50 dark:bg-gray-800">
     <div
       v-for="(group, index) of routes"
       :key="`sidenav-link-group-${index}`"
