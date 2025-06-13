@@ -20,7 +20,7 @@
               <div
                 :class="
                   twMerge(
-                    'smallcaps flex items-center gap-x-1 font-semibold tracking-wider',
+                    'smallcaps flex items-center gap-x-1 font-medium text-sm tracking-wider',
                     header.sort !== undefined && 'cursor-pointer select-none',
                     (contentAlignment(header.align) === 'center' ||
                       (header.isDate &&

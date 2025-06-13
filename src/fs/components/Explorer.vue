@@ -162,9 +162,7 @@ const store = useFSStore();
 const {
   entries: allEntries,
   scanPathApiStatus: apiStatus,
-  scanPathApiMsg: apiMsg,
   scanEntries,
-  x,
 } = storeToRefs(store);
 const apiHandle = useApiHandle(apiStatus);
 
