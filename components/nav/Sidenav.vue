@@ -19,7 +19,7 @@
       </NuxtLinkLocale>
     </div>
 
-    <div class="mt-auto">
+    <div class="mt-auto space-y-1">
       <ThemeButton
         v-slot="{ icon }"
         :class="[
@@ -29,20 +29,34 @@
       >
         <component :is="icon" class="w-6 shrink-0" />
       </ThemeButton>
-      <p class="text-[.6rem] text-muted-foreground text-center">{{ appInfo?.version }}</p>
+      <div class="relative flex items-center justify-center gap-x-1">
+        <p class="text-muted-foreground text-center text-[.6rem]">
+          {{ appInfo?.version }}
+        </p>
+        <AppTooltip v-if="updateApiStatus === TApiStatus.error" side="right">
+          <AlertIcon class="size-4 stroke-red-600 dark:stroke-red-400" />
+
+          <template #tooltip>
+            <p class="text-destructive font-medium">{{ $t("updateError") }}</p>
+            <p>{{ updateApiMsg }}</p>
+          </template>
+        </AppTooltip>
+      </div>
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
+import { AlertTriangleIcon as AlertIcon } from "lucide-vue-next";
 import type { RouteLocationRaw } from "vue-router";
 
 import { HomeIcon } from "../icons/two-tone";
 import { getRouteFromName } from "~/core/utils";
 import { useSettingsStore } from "~/src/settings/store";
+import { TApiStatus } from "~/core/api";
 
 const store = useSettingsStore();
-const { appInfo } = storeToRefs(store);
+const { appInfo, updateApiStatus, updateApiMsg } = storeToRefs(store);
 
 interface IRoute {
   icon: Component;

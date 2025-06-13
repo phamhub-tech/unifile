@@ -5,7 +5,10 @@ export function getApiMessage(
   err: any,
   message = 'An error occured. Please try again later.',
 ): string {
-  const msg = (err as IApiResponse).message ?? message
+  let msg = message;
+  
+  if ((err as IApiResponse).message) msg = message
+  else if (typeof err === 'string') msg = err
 
   if (msg === message) console.error(err)
   return msg

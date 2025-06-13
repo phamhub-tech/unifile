@@ -7,10 +7,12 @@
 
       <TooltipContent
         :side="side ?? 'bottom'"
-        class="bg-background text-foreground rounded border shadow-lg"
+        class="bg-background text-foreground rounded border shadow-lg text-sm"
         arrow-class="bg-background fill-background border-r border-b"
       >
-        {{ tooltip }}
+        <slot name="tooltip">
+          {{ tooltip }}
+        </slot>
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
@@ -25,5 +27,5 @@ import {
   TooltipContent,
 } from "./ui/tooltip";
 
-defineProps<{ tooltip: string; side?: TooltipContentProps["side"] }>();
+defineProps<{ tooltip?: string; side?: TooltipContentProps["side"] }>();
 </script>
