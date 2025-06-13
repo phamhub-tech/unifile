@@ -97,7 +97,6 @@ We welcome contributions!.  Here's how you can help:
 
 - [ ] Implement a robust logging system.
 - [ ] Detect and report chrashes.
-- [ ] Templating project settings based on the type of project selected.
 
 ### UI/Ux Features
 
