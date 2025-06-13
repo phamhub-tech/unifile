@@ -28,6 +28,9 @@ interface IState {
 
 	saveSettingsApiStatus: TApiStatus;
 	saveSettingsApiMsg: string;
+
+	updateApiStatus: TApiStatus;
+	updateApiMsg: string;
 }
 
 const state = (): IState => {
@@ -42,6 +45,9 @@ const state = (): IState => {
 
 		saveSettingsApiStatus: TApiStatus.default,
 		saveSettingsApiMsg: '',
+
+		updateApiStatus: TApiStatus.default,
+		updateApiMsg: '',
 	}
 }
 
@@ -56,7 +62,14 @@ export const useSettingsStore = defineStore('settings', {
 		// },
 
 		async init() {
-			settingsService.checkUpdate();
+			this.updateApiStatus = TApiStatus.loading;
+			settingsService
+				.checkUpdate()
+				.then(() => this.updateApiStatus = TApiStatus.success)
+				.catch((e) => {
+					this.updateApiStatus = TApiStatus.error;
+					this.updateApiMsg = getApiMessage(e)
+				});
 
 			const info = new AppInfo();
 			await info.build();
