@@ -93,7 +93,11 @@ impl FSEntry {
 
         let mut entry_type = FSEntryType::Folder;
         let mut file_type = None; // Folders don't have file types
-        if entry.file_type().expect("File has no path: {entry}").is_file() {
+        if entry
+            .file_type()
+            .expect("File has no path: {entry}")
+            .is_file()
+        {
             file_type = FileType::from_file_path(&path);
             entry_type = FSEntryType::File;
         }

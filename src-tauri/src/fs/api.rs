@@ -70,7 +70,10 @@ pub fn get_entries(path: String) -> Result<ApiResponse<Vec<FSEntry>>, ApiError> 
 }
 
 #[tauri::command]
-pub async fn scan_path(path: String, on_event: Channel<ScanEvent>) -> Result<ApiResponse<Option<()>>, ApiError> {
+pub async fn scan_path(
+    path: String,
+    on_event: Channel<ScanEvent>,
+) -> Result<ApiResponse<Option<()>>, ApiError> {
     on_event.send(ScanEvent::Started {}).unwrap();
 
     controllers::scan_path(path, |entry| {
