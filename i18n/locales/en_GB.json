@@ -1,4 +1,16 @@
 {
+	"fileTypes": {
+		"app": "Application | Applications",
+		"audio": "Audio",
+		"archive": "Archive | Archives",
+		"document": "Document | Documents",
+		"image": "Image | Images",
+		"video": "Video | Videos",
+		"other": "Other | Others"
+	},
+  "usedSpaceDistribution": "Used space distribution",
+  "usedSpacePercent": "{percent}% of used disk space",
+  "xOfY": "{x} of {y}",
   "path": "Path",
   "duplicatesFound": "Found 1 duplicate | Found {count} duplicates",
   "clear": "Clear",

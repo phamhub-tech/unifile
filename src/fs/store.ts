@@ -28,8 +28,6 @@ interface IState {
 	scanPathApiMsg: string;
 	scanEntries: Record<string, IScanEntry> | null;
 	scanStats: object | null;
-	
-	y: Record<string, number>;
 }
 const state = (): IState => ({
 	getDrivesApiStatus: TApiStatus.default,
@@ -46,8 +44,6 @@ const state = (): IState => ({
 	scanPathApiMsg: '',
 	scanEntries: null,
 	scanStats: null,
-	
-	y: {}
 })
 
 export const useFSStore = defineStore('home', {
@@ -102,6 +98,7 @@ export const useFSStore = defineStore('home', {
 			try {
 				this.scanPathApiStatus = TApiStatus.loading;
 				this.scanPathApiMsg = '';
+				this.clearScan(false);
 
 				await fsService.scanPath(path, (event) => {
 					if (event.event === 'progress') {
@@ -132,12 +129,6 @@ export const useFSStore = defineStore('home', {
 				this.scanPathApiMsg = getApiMessage(e);
 				console.error(e);
 			}
-		},
-
-		test() {
-			const raw = Object.assign({}, toRaw(this.y));
-			raw['x'] = 25 + new Date().getTime();
-			this.y = raw;
 		},
 
 		clearScan(reset = true) {

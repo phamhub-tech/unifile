@@ -52,16 +52,14 @@
 
     <div class="flex gap-x-2">
       <Transition name="fade">
-        <div v-if="scanEntries">
-          <AppTooltip :tooltip="$t('clearScanTooltip')">
-            <Button variant="destructive-tonal" @click="clearScan">
-              <ClearIcon />
-              {{ $t("clear") }}
-            </Button>
-          </AppTooltip>
-        </div>
+        <AppTooltip v-if="scanEntries" :tooltip="$t('clearScanTooltip')">
+          <Button variant="destructive-tonal" @click="clearScan">
+            <ClearIcon />
+            {{ $t("clear") }}
+          </Button>
+        </AppTooltip>
       </Transition>
-      <AppTooltip :tooltip="$t('scanTooltip')">
+      <AppTooltip :tooltip="$t('scanTooltip')" :disabled="apiHandle.isLoading.value">
         <Button
           :loading="apiHandle.isLoading.value"
           variant="tonal"
@@ -135,7 +133,7 @@
       </div>
     </template>
   </TableDataTable>
-  <ScanResults v-else :scan-entries="scanEntries" class="mt-2" />
+  <ScanResults v-else :scan-entries="scanEntries" :drive="drive" class="mt-2" />
 </template>
 
 <script setup lang="ts">

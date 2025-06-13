@@ -1,6 +1,6 @@
 <template>
-  <div class="">
-    <div class="space-y-3">
+  <div class="flex items-start gap-x-8">
+    <div class="flex-2 space-y-3">
       <p class="text-muted-foreground">
         {{ $t("duplicatesFound", entriesToShow.length) }}
       </p>
@@ -12,7 +12,7 @@
           :value="entry.name"
         >
           <AccordionTrigger
-            class="flex items-center justify-between gap-x-2 py-2"
+            class="flex items-center justify-between gap-x-2 py-2 hover:bg-primary/10"
           >
             <div class="flex items-center gap-x-2">
               <component
@@ -83,6 +83,8 @@
         </AccordionItem>
       </Accordion>
     </div>
+
+    <ScanDistribution :drive="drive" class="flex-1 max-w-2xl min-w-xs sticky top-14" />
   </div>
 </template>
 
@@ -98,8 +100,10 @@ import {
 import type { IScanEntry } from "../models/scan/types";
 import { getIconForFileType, getStylesForFileType } from "../utils";
 import { TFileSystemEntryType } from "../models/entry";
+import ScanDistribution from "./ScanDistribution.vue";
+import type { DriveModel } from "../models/drive";
 
-const props = defineProps<{ scanEntries: Record<string, IScanEntry> }>();
+const props = defineProps<{ scanEntries: Record<string, IScanEntry>, drive: DriveModel }>();
 
 const entriesToShow = computed(() =>
   Object.values(props.scanEntries)
