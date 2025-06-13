@@ -84,7 +84,7 @@
       </Accordion>
     </div>
 
-    <ScanDistribution :drive="drive" class="flex-1 max-w-2xl min-w-xs sticky top-14" />
+    <ScanDistribution :drive="drive" class="flex-1 shrink-0 max-w-2xl min-w-xs sticky top-14" />
   </div>
 </template>
 
