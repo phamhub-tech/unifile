@@ -15,13 +15,13 @@
             <AccordionTrigger
               class="hover:bg-primary/10 flex items-center justify-between gap-x-2 py-2"
             >
-              <div class="flex items-center gap-x-2">
+              <div class="flex min-w-0 items-center gap-x-2">
                 <component
                   :is="getIconForFileType(entry.fileType)"
                   :style="getStylesForFileType(entry.fileType)"
                   class="size-6 shrink-0"
                 />
-                <p class="truncate">{{ entry.name }}</p>
+                <p class="max-w-lg truncate">{{ entry.name }}</p>
               </div>
               <p class="ml-auto text-sm opacity-60">
                 {{ humanizeBytes(entry.totalSize) }}
@@ -73,7 +73,10 @@
                 <template
                   #list-item-value="{ key, value, item: { type, extension } }"
                 >
-                  <div v-if="key === 'path' || key === 'name'" class="max-w-2xs">
+                  <div
+                    v-if="key === 'path' || key === 'name'"
+                    class="max-w-2xs"
+                  >
                     <AppTooltip :tooltip="value" class="select-all">
                       <p class="truncate">{{ value }}</p>
                     </AppTooltip>
@@ -127,7 +130,9 @@ const props = defineProps<{
 const entriesToShow = computed(() =>
   Object.values(props.scanEntries)
     .filter((entry) => entry.duplicates.length > 1)
-    .sort((a, b) => b.totalSize - a.totalSize),
+    .sort((a, b) => {
+      return b.totalSize - a.totalSize;
+    }),
 );
 
 const main = document.querySelector("main#root") as HTMLElement;

@@ -6,6 +6,7 @@ import { DriveModel } from "./models/drive"
 import { fsService } from "./service"
 import FileSystemEntryModel from "./models/entry";
 import type { IScanEntry } from "./models/scan/types";
+import type { StyleValue } from "vue";
 
 interface IState {
 	getDrivesApiStatus: TApiStatus;
@@ -27,7 +28,16 @@ interface IState {
 	scanPathApiStatus: TApiStatus;
 	scanPathApiMsg: string;
 	scanEntries: Record<string, IScanEntry> | null;
-	currentFile: string | null;
+	currentFileName: string | null;
+	currentFilePath: string | null;
+	
+	/**
+	 * Styles that should be passed to main.
+	 * 
+	 * This is very volatile and very experimental.  Only meant to be used with useVirtualList
+	 */
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	mainStyle: any | null;
 }
 const state = (): IState => ({
 	getDrivesApiStatus: TApiStatus.default,
@@ -103,15 +113,27 @@ export const useFSStore = defineStore('home', {
 				this.scanPathApiMsg = '';
 				this.clearScan();
 
-				await fsService.scanPath(path, (event) => {
+				console.profile('Scan')
+				// let lastUpdateMs = 0;
+				// const throttleMs = 20000;
+				this.scanEntries = {};
+				const scanEntries: typeof this.scanEntries = {};
+				// const scanEntries = { ...toRaw(this.scanEntries) };
+				// const scanEntries = new Map(Object.entries({ ...toRaw(this.scanEntries) }));
+				fsService.scanPath(path, (event) => {
 					if (event.event === 'progress') {
-						const scanEntries = Object.assign({}, toRaw(this.scanEntries ?? {}));
+						// const scanEntries = this.scanEntries!;
+						// const scanEntries = Object.assign({}, toRaw(this.scanEntries ?? {}));
+						// const scanEntries = { ...toRaw(this.scanEntries) };
 						const entry = FileSystemEntryModel.fromJson(event.data.entry);
 						const scanEntry: IScanEntry | undefined = scanEntries[entry.name];
+						// const scanEntry = scanEntries.get(entry.name);
+
 						if (scanEntry) {
 							scanEntry.totalSize += entry.size;
 							scanEntry.duplicates.push(entry);
-							scanEntries[scanEntry.name] = scanEntry;
+							// scanEntries[scanEntry.name] = scanEntry;
+							// scanEntries.set(scanEntry.name, scanEntry);
 						} else {
 							scanEntries[entry.name] = {
 								name: entry.name,
@@ -119,19 +141,39 @@ export const useFSStore = defineStore('home', {
 								fileType: entry.fileType,
 								// Set this entry as a duplicate since when showing duplicates this entry should be included
 								duplicates: [entry],
-							}
+							};
+							// scanEntries.set(entry.name, {
+							// 	name: entry.name,
+							// 	totalSize: entry.size,
+							// 	fileType: entry.fileType,
+							// 	// Set this entry as a duplicate since when showing duplicates this entry should be included
+							// 	duplicates: [entry],
+							// })
 						}
-						
-						this.currentFile = entry.path;
-						this.scanEntries = scanEntries;
+
+						this.currentFilePath = entry.path;
+						this.currentFileName = entry.name;
+
+						// const now = Date.now();
+						// if (now - lastUpdateMs > throttleMs) {
+						// 	// 	// this.scanEntries = Object.fromEntries(scanEntries);
+						// 	this.scanEntries = scanEntries;
+						// 	lastUpdateMs = now;
+						// }
 					}
 
 					if (event.event === 'finished') {
-						this.currentFile = null;
+						this.currentFilePath = null;
+						this.currentFileName = null;
+						this.scanEntries = scanEntries;
+						// this.scanEntries = Object.fromEntries(scanEntries);
+
+						this.scanPathApiStatus = TApiStatus.success;
+						console.profileEnd('Scan')
 					}
 				});
 
-				this.scanPathApiStatus = TApiStatus.success;
+				// this.scanPathApiStatus = TApiStatus.success;
 			} catch (e) {
 				this.scanPathApiStatus = TApiStatus.error;
 				this.scanPathApiMsg = getApiMessage(e);
