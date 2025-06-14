@@ -113,7 +113,7 @@ export const useFSStore = defineStore('home', {
 				this.scanPathApiMsg = '';
 				this.clearScan();
 
-				console.profile('Scan')
+				// console.profile('Scan')
 				// let lastUpdateMs = 0;
 				// const throttleMs = 20000;
 				this.scanEntries = {};
@@ -169,7 +169,7 @@ export const useFSStore = defineStore('home', {
 						// this.scanEntries = Object.fromEntries(scanEntries);
 
 						this.scanPathApiStatus = TApiStatus.success;
-						console.profileEnd('Scan')
+						// console.profileEnd('Scan')
 					}
 				});
 
