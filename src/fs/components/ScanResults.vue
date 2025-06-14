@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-start gap-x-8">
-    <div class="flex-2 space-y-3">
+    <div class="min-w-0 flex-2 space-y-3">
       <p class="text-muted-foreground">
         {{ $t("duplicatesFound", entriesToShow.length) }}
       </p>
@@ -45,6 +45,7 @@
                   {
                     label: $t('path'),
                     value: 'path',
+                    key: 'path',
                   },
                   {
                     label: $t('modified'),
@@ -69,7 +70,14 @@
                   },
                 ]"
               >
-                <template #list-item-value="{ key, item: { type, extension } }">
+                <template
+                  #list-item-value="{ key, value, item: { type, extension } }"
+                >
+                  <div v-if="key === 'path' || key === 'name'" class="max-w-2xs">
+                    <AppTooltip :tooltip="value" class="select-all">
+                      <p class="truncate">{{ value }}</p>
+                    </AppTooltip>
+                  </div>
                   <template v-if="key === 'type'">
                     <p v-if="type === TFileSystemEntryType.folder">
                       {{ $t("folders") }}
@@ -128,6 +136,7 @@ const mainRef = ref(main);
 const { list, containerProps, wrapperProps } = useVirtualList(entriesToShow, {
   itemHeight: 35,
   containerRef: mainRef,
+  overscan: 30,
 });
 
 main.onscroll = containerProps.onScroll;

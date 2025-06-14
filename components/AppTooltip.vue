@@ -1,5 +1,5 @@
 <template>
-  <TooltipProvider :delay-duration="700">
+  <TooltipProvider v-bind="forwarded" :delay-duration="700">
     <Tooltip>
       <TooltipTrigger as-child>
         <slot />
@@ -7,7 +7,12 @@
 
       <TooltipContent
         :side="side ?? 'bottom'"
-        class="bg-background text-foreground rounded border shadow-lg text-sm"
+        :class="
+          cn(
+            'bg-background text-foreground max-w-xl rounded border text-sm shadow-lg dark:bg-gray-800',
+            $attrs.class as string | undefined,
+          )
+        "
         arrow-class="bg-background fill-background border-r border-b"
       >
         <slot name="tooltip">
@@ -26,6 +31,12 @@ import {
   TooltipProvider,
   TooltipContent,
 } from "./ui/tooltip";
+import { cn } from "~/lib/utils";
+import { removeFromAttrs } from "~/core/utils";
 
+defineOptions({ inheritAttrs: false})
 defineProps<{ tooltip?: string; side?: TooltipContentProps["side"] }>();
+
+const attrs = useAttrs();
+const forwarded = removeFromAttrs(attrs, 'class');
 </script>
