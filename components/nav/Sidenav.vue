@@ -34,7 +34,7 @@
           {{ appInfo?.version }}
         </p>
         <AppTooltip v-if="updateApiStatus === TApiStatus.error" side="right">
-          <AlertIcon class="size-4 stroke-red-600 dark:stroke-red-400" />
+          <AlertIcon class="size-3.5 stroke-red-600 dark:stroke-red-400" />
 
           <template #tooltip>
             <p class="text-destructive font-medium">{{ $t("updateError") }}</p>

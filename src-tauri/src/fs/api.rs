@@ -2,10 +2,12 @@ use std::io::ErrorKind;
 
 use ignore::WalkBuilder;
 use tauri::ipc::Channel;
+use tauri::State;
 
 use crate::api::{ApiError, ApiResponse};
 use crate::fs::models::scan::ScanEvent;
 use crate::fs::models::{drive::Drive, entry::FSEntry};
+use crate::settings::models::AppSettingsManager;
 use crate::{api_error, api_response};
 
 use super::controllers;
@@ -72,11 +74,19 @@ pub fn get_entries(path: String) -> Result<ApiResponse<Vec<FSEntry>>, ApiError> 
 #[tauri::command]
 pub async fn scan_path(
     path: String,
+    settings_manager: State<'_, AppSettingsManager>,
     on_event: Channel<ScanEvent>,
 ) -> Result<ApiResponse<Option<()>>, ApiError> {
     on_event.send(ScanEvent::Started {}).unwrap();
 
-    controllers::scan_path(path, |entry| {
+    let global_scan_settings = &settings_manager
+        .settings
+        .lock()
+        .expect("Couldn't lock settings")
+        .scan;
+    let scan_settings = global_scan_settings.clone();
+
+    controllers::scan_path(path, scan_settings, |entry| {
         on_event.send(ScanEvent::Progress { entry }).unwrap();
     });
 

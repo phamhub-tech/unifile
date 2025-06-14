@@ -13,7 +13,7 @@
             $attrs.class as string | undefined,
           )
         "
-        arrow-class="bg-background fill-background border-r border-b"
+        arrow-class="bg-background fill-background border-r border-b dark:bg-gray-800 dark:fill-gray-800"
       >
         <slot name="tooltip">
           {{ tooltip }}

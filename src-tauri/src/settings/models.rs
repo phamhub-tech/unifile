@@ -151,18 +151,22 @@ pub struct ScanSettings {
 
     #[serde(default = "bool_default")]
     pub use_gitignore: bool,
+
+    #[serde(default = "bool_default")]
+    pub scan_hidden: bool,
 }
 impl Default for ScanSettings {
     fn default() -> Self {
         ScanSettings {
             ignore_patterns: ignore_pattern_default(),
             use_gitignore: bool_default(),
+            scan_hidden: bool_default(),
         }
     }
 }
 
 fn ignore_pattern_default() -> Vec<String> {
-    vec!["**/.git", "**/.output", "**/node_modules", "*.lock"]
+    vec!["**/.fvm", "**/.git", "**/.output", "**/.pnpm-store", "**/.pub", "**/build", "**/node_modules"]
         .iter()
         .map(|pattern| pattern.to_string())
         .collect()

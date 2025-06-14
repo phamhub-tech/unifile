@@ -39,9 +39,9 @@
       </template>
     </ProgressCompoundLinearProgress>
 
-    <div class="text-muted-foreground truncate text-xs">
-      <p>{{ currentFileName }}</p>
-      <p>{{ currentFilePath }}</p>
+    <div class="text-muted-foreground text-xs">
+      <p class="truncate">{{ currentFileName }}</p>
+      <p class="truncate">{{ currentFilePath }}</p>
     </div>
   </div>
 </template>
