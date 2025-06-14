@@ -24,13 +24,18 @@
       :duration="800"
       :colors="distribution.map((d) => getHexForFileType(d.type).dark)"
     >
-      <template #legend="{ index }">
-        <p>{{ $t(`fileTypes.${distribution[index].type}`, 2) }}</p>
-        <p class="text-xs">
-          {{ humanizeBytes(distribution[index].size) }}
-          <span>•</span>
-          {{ distribution[index].count }}
-        </p>
+      <template #legend="{ index, percentage }">
+        <div class="flex-1 space-y-0.5">
+          <div class="flex">
+            <p>{{ $t(`fileTypes.${distribution[index].type}`, 2) }}</p>
+            <p class="ml-auto">{{ percentage }}%</p>
+          </div>
+          <p class="text-xs">
+            {{ humanizeBytes(distribution[index].size) }}
+            <span>•</span>
+            {{ distribution[index].count }}
+          </p>
+        </div>
       </template>
     </ProgressCompoundLinearProgress>
 
