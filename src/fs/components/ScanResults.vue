@@ -5,90 +5,97 @@
         {{ $t("duplicatesFound", entriesToShow.length) }}
       </p>
 
-      <Accordion type="multiple">
-        <AccordionItem
-          v-for="entry of entriesToShow"
-          :key="`entry-header-${entry.name}`"
-          :value="entry.name"
-        >
-          <AccordionTrigger
-            class="flex items-center justify-between gap-x-2 py-2 hover:bg-primary/10"
+      <div v-bind="wrapperProps">
+        <Accordion type="multiple">
+          <AccordionItem
+            v-for="{ data: entry } of list"
+            :key="`entry-header-${entry.name}`"
+            :value="entry.name"
           >
-            <div class="flex items-center gap-x-2">
-              <component
-                :is="getIconForFileType(entry.fileType)"
-                :style="getStylesForFileType(entry.fileType)"
-                class="size-6 shrink-0"
-              />
-              <p class="truncate">{{ entry.name }}</p>
-            </div>
-            <p class="ml-auto text-sm opacity-60">
-              {{ humanizeBytes(entry.totalSize) }}
-              ({{ entry.duplicates.length }})
-            </p>
-          </AccordionTrigger>
-          <AccordionContent class="pl-4">
-            <TableDataTable
-              align="left"
-              class="border-t-0 select-none"
-              :has-header="false"
-              :items="entry.duplicates"
-              :headers="[
-                {
-                  label: $t('name'),
-                  value: 'name',
-                  key: 'name',
-                  itemClass:
-                    'w-[1%] whitespace-nowrap max-w-xl !pr-10 overflow-ellipsis',
-                },
-                {
-                  label: $t('path'),
-                  value: 'path',
-                },
-                {
-                  label: $t('modified'),
-                  value: 'modified',
-                  isDate: true,
-                  itemClass: 'opacity-60',
-                },
-                {
-                  label: $t('type'),
-                  value: 'type',
-                  key: 'type',
-                  itemClass: 'opacity-60',
-                },
-                {
-                  label: $t('size'),
-                  value: ({ size, type }) =>
-                    type === TFileSystemEntryType.file
-                      ? humanizeBytes(size)
-                      : '',
-                  align: 'right',
-                  itemClass: 'opacity-60',
-                },
-              ]"
+            <AccordionTrigger
+              class="hover:bg-primary/10 flex items-center justify-between gap-x-2 py-2"
             >
-              <template #list-item-value="{ key, item: { type, extension } }">
-                <template v-if="key === 'type'">
-                  <p v-if="type === TFileSystemEntryType.folder">
-                    {{ $t("folders") }}
-                  </p>
-                  <p v-else-if="type === TFileSystemEntryType.file">
-                    {{ $t("extFileType", { ext: extension.toUpperCase() }) }}
-                  </p>
+              <div class="flex items-center gap-x-2">
+                <component
+                  :is="getIconForFileType(entry.fileType)"
+                  :style="getStylesForFileType(entry.fileType)"
+                  class="size-6 shrink-0"
+                />
+                <p class="truncate">{{ entry.name }}</p>
+              </div>
+              <p class="ml-auto text-sm opacity-60">
+                {{ humanizeBytes(entry.totalSize) }}
+                ({{ entry.duplicates.length }})
+              </p>
+            </AccordionTrigger>
+            <AccordionContent class="pl-4">
+              <TableDataTable
+                align="left"
+                class="border-t-0 select-none"
+                :has-header="false"
+                :items="entry.duplicates"
+                :headers="[
+                  {
+                    label: $t('name'),
+                    value: 'name',
+                    key: 'name',
+                    itemClass:
+                      'w-[1%] whitespace-nowrap max-w-xl !pr-10 overflow-ellipsis',
+                  },
+                  {
+                    label: $t('path'),
+                    value: 'path',
+                  },
+                  {
+                    label: $t('modified'),
+                    value: 'modified',
+                    isDate: true,
+                    itemClass: 'opacity-60',
+                  },
+                  {
+                    label: $t('type'),
+                    value: 'type',
+                    key: 'type',
+                    itemClass: 'opacity-60',
+                  },
+                  {
+                    label: $t('size'),
+                    value: ({ size, type }) =>
+                      type === TFileSystemEntryType.file
+                        ? humanizeBytes(size)
+                        : '',
+                    align: 'right',
+                    itemClass: 'opacity-60',
+                  },
+                ]"
+              >
+                <template #list-item-value="{ key, item: { type, extension } }">
+                  <template v-if="key === 'type'">
+                    <p v-if="type === TFileSystemEntryType.folder">
+                      {{ $t("folders") }}
+                    </p>
+                    <p v-else-if="type === TFileSystemEntryType.file">
+                      {{ $t("extFileType", { ext: extension.toUpperCase() }) }}
+                    </p>
+                  </template>
                 </template>
-              </template>
-            </TableDataTable>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+              </TableDataTable>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
     </div>
 
-    <ScanDistribution :drive="drive" class="flex-1 shrink-0 max-w-2xl min-w-xs sticky top-14" />
+    <ScanDistribution
+      :drive="drive"
+      class="sticky top-14 max-w-2xl min-w-xs flex-1 shrink-0"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { useVirtualList } from "~/lib/use-virtual-list";
+
 import { humanizeBytes } from "~/core/utils";
 import {
   Accordion,
@@ -102,12 +109,29 @@ import { getIconForFileType, getStylesForFileType } from "../utils";
 import { TFileSystemEntryType } from "../models/entry";
 import ScanDistribution from "./ScanDistribution.vue";
 import type { DriveModel } from "../models/drive";
+import { useFSStore } from "../store";
 
-const props = defineProps<{ scanEntries: Record<string, IScanEntry>, drive: DriveModel }>();
+const props = defineProps<{
+  scanEntries: Record<string, IScanEntry>;
+  drive: DriveModel;
+}>();
 
 const entriesToShow = computed(() =>
   Object.values(props.scanEntries)
     .filter((entry) => entry.duplicates.length > 1)
     .sort((a, b) => b.totalSize - a.totalSize),
 );
+
+const main = document.querySelector("main#root") as HTMLElement;
+const mainRef = ref(main);
+
+const { list, containerProps, wrapperProps } = useVirtualList(entriesToShow, {
+  itemHeight: 35,
+  containerRef: mainRef,
+});
+
+main.onscroll = containerProps.onScroll;
+
+const store = useFSStore();
+store.setMainStyle(containerProps.style);
 </script>

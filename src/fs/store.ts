@@ -43,7 +43,10 @@ const state = (): IState => ({
 	scanPathApiStatus: TApiStatus.default,
 	scanPathApiMsg: '',
 	scanEntries: null,
-	currentFile: null,
+	currentFileName: null,
+	currentFilePath: null,
+
+	mainStyle: null,
 })
 
 export const useFSStore = defineStore('home', {
@@ -98,7 +101,7 @@ export const useFSStore = defineStore('home', {
 			try {
 				this.scanPathApiStatus = TApiStatus.loading;
 				this.scanPathApiMsg = '';
-				this.clearScan(false);
+				this.clearScan();
 
 				await fsService.scanPath(path, (event) => {
 					if (event.event === 'progress') {
@@ -138,6 +141,7 @@ export const useFSStore = defineStore('home', {
 
 		clearScan(reset = true) {
 			// this.scanSize = 0;
+			this.mainStyle = null;
 
 			if (reset) {
 				this.scanEntries = null;
@@ -145,6 +149,10 @@ export const useFSStore = defineStore('home', {
 			}
 
 			this.scanEntries = {}
-		}
+		},
+
+		setMainStyle(style: StyleValue | null) {
+			this.mainStyle = style;
+		},
 	}
 })

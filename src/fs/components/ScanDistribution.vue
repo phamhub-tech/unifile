@@ -27,16 +27,17 @@
       <template #legend="{ index }">
         <p>{{ $t(`fileTypes.${distribution[index].type}`, 2) }}</p>
         <p class="text-xs">
-          {{ distribution[index].count }}
-          <span>•</span>
           {{ humanizeBytes(distribution[index].size) }}
+          <span>•</span>
+          {{ distribution[index].count }}
         </p>
       </template>
     </ProgressCompoundLinearProgress>
 
-    <p class="text-muted-foreground truncate text-sm">
-      {{ currentFile }}
-    </p>
+    <div class="text-muted-foreground truncate text-xs">
+      <p>{{ currentFileName }}</p>
+      <p>{{ currentFilePath }}</p>
+    </div>
   </div>
 </template>
 
@@ -51,7 +52,7 @@ import { getHexForFileType } from "../utils";
 const props = defineProps<{ drive: DriveModel }>();
 
 const store = useFSStore();
-const { scanEntries, currentFile } = storeToRefs(store);
+const { scanEntries, currentFilePath, currentFileName } = storeToRefs(store);
 
 const scanSize = computed<number>(() => {
   return Object.values(scanEntries.value!).reduce(
