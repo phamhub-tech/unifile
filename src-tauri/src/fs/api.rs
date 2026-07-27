@@ -1,95 +1,60 @@
-use std::io::ErrorKind;
-
-use ignore::WalkBuilder;
 use tauri::ipc::Channel;
 use tauri::State;
 
-use crate::api::{ApiError, ApiResponse};
+use crate::api::ApiResponse;
+use crate::fs::models::drive::Drive;
+use crate::fs::models::entry::FSEntry;
 use crate::fs::models::scan::ScanEvent;
-use crate::fs::models::{drive::Drive, entry::FSEntry};
 use crate::settings::models::AppSettingsManager;
-use crate::{api_error, api_response};
 
-use super::controllers;
+use super::controller;
 
+/// Returns all mounted drives detected on the system.
+///
+/// This command is infallible — if the disk list cannot be retrieved,
+/// `sysinfo` returns an empty list rather than an error.
 #[tauri::command]
-pub fn get_drives() -> Result<ApiResponse<Vec<Drive>>, ApiError> {
-    let drives = sysinfo::Disks::new_with_refreshed_list()
-        .iter()
-        .map(|disk| Drive::from_disk(disk))
-        .collect();
-
-    Ok(api_response!(drives))
+pub fn get_drives() -> ApiResponse<Vec<Drive>> {
+    ApiResponse::ok(controller::get_drives())
 }
 
+/// Returns the immediate children of `path` (depth = 1).
+///
+/// Permission-denied entries are silently skipped. Any other IO error
+/// stops enumeration early and is returned as an error response.
 #[tauri::command]
-pub fn get_entries(path: String) -> Result<ApiResponse<Vec<FSEntry>>, ApiError> {
-    let mut message = "Success".to_string();
-    let mut has_error = false;
-    let mut entries = Vec::new();
-
-    let mut builder = WalkBuilder::new(&path);
-    let builder = builder.standard_filters(false).hidden(false).parents(true);
-
-    let walker = builder.max_depth(Some(1)).build();
-    for result in walker {
-        match result {
-            Ok(entry) => {
-                let entry_path = entry.path().to_string_lossy().to_string();
-                if entry_path == path {
-                    println!("Ignoring root path: {path}");
-                    continue;
-                }
-
-                let fs_entry = match FSEntry::from_entry(&entry) {
-                    Ok(entry) => entry,
-                    Err(e) => match e.kind() {
-                        ErrorKind::PermissionDenied => {
-                            eprintln!("Permission deined: {:?}", entry);
-                            continue;
-                        }
-                        _ => {
-                            eprintln!("FS Entry Error: {:?}", e);
-                            message = "Uknown error".to_string();
-                            has_error = true;
-                            break;
-                        }
-                    },
-                };
-                entries.push(fs_entry);
-            }
-            Err(err) => {
-                eprintln!("Error: {:?}", err);
-            }
-        }
-    }
-
-    if has_error {
-        return Err(api_error!(message));
-    }
-
-    Ok(api_response!(entries, message, has_error))
+pub fn get_entries(path: String) -> ApiResponse<Option<Vec<FSEntry>>> {
+    controller::get_entries(&path).into()
 }
 
+/// Recursively scans `path` for all filesystem entries and streams each one
+/// to the frontend via `on_event`.
+///
+/// Emits three event types in order:
+/// - `started`  — scan has begun
+/// - `progress` — one entry per file/folder discovered
+/// - `finished` — scan completed successfully
+///
+/// If an error occurs the command returns an error `ApiResponse` and
+/// `finished` is **not** emitted, so the frontend can use the absence of
+/// `finished` as a signal that something went wrong.
+///
+/// Returns `Result` as required by Tauri for async commands that accept
+/// borrowed state parameters.
 #[tauri::command]
 pub async fn scan_path(
     path: String,
     settings_manager: State<'_, AppSettingsManager>,
     on_event: Channel<ScanEvent>,
-) -> Result<ApiResponse<Option<()>>, ApiError> {
-    on_event.send(ScanEvent::Started {}).unwrap();
+) -> Result<ApiResponse<Option<()>>, String> {
+    // B1 fix: clone the settings before the MutexGuard is dropped so the
+    // mutex is released immediately, not held for the entire scan.
+    let scan_settings = match settings_manager.settings.lock() {
+        Ok(guard) => guard.scan.clone(),
+        Err(_) => return Ok(ApiResponse::err("Failed to acquire settings lock")),
+    };
 
-    let global_scan_settings = &settings_manager
-        .settings
-        .lock()
-        .expect("Couldn't lock settings")
-        .scan;
-    let scan_settings = global_scan_settings.clone();
-
-    controllers::scan_path(path, scan_settings, |entry| {
-        on_event.send(ScanEvent::Progress { entry }).unwrap();
-    });
-
-    on_event.send(ScanEvent::Finished {}).unwrap();
-    Ok(api_response!(None))
+    Ok(controller::do_scan(path, scan_settings, &on_event)
+        .await
+        .into())
 }

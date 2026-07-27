@@ -3,6 +3,9 @@ use std::{fs, path::Path};
 use file_format::{FileFormat, Kind};
 use serde::Serialize;
 
+use crate::fs::error::FsError;
+
+/// Whether a filesystem entry is a file or a directory.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum FSEntryType {
     #[serde(rename = "folder")]
@@ -12,6 +15,7 @@ pub enum FSEntryType {
     File,
 }
 
+/// Broad category of a file's content.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash, Serialize)]
 pub enum FileType {
     #[serde(rename = "audio")]
@@ -40,6 +44,11 @@ pub enum FileType {
     Other,
 }
 impl FileType {
+    /// Detects the [`FileType`] of the file at `path` by reading its magic bytes.
+    ///
+    /// Returns [`FileType::Other`] when detection fails or the kind is unknown.
+    /// Returns `None` only if the `file_format` crate itself fails (currently
+    /// never happens — kept as `Option` to match the crate's API).
     pub fn from_file_path<P: AsRef<Path>>(path: &P) -> Option<Self> {
         let file_kind = match FileFormat::from_file(&path) {
             Ok(kind) => kind.kind(),
@@ -61,6 +70,7 @@ impl FileType {
     }
 }
 
+/// A single file or directory entry in the filesystem.
 #[derive(Clone, Debug, Serialize)]
 pub struct FSEntry {
     pub size: u64,
@@ -72,10 +82,17 @@ pub struct FSEntry {
     pub modified: Option<String>,
 }
 impl FSEntry {
-    pub fn from_entry(entry: &ignore::DirEntry) -> Result<Self, std::io::Error> {
+    /// Builds an [`FSEntry`] from a directory-walker entry.
+    ///
+    /// Converts IO errors into typed [`FsError`] variants so callers can
+    /// distinguish recoverable errors (permission denied, not found) from
+    /// unexpected failures without matching on [`std::io::ErrorKind`].
+    pub fn from_entry(entry: &ignore::DirEntry) -> Result<Self, FsError> {
         let path = entry.path();
+        let path_str = path.display().to_string();
+        let metadata = fs::metadata(entry.path())
+            .map_err(|e| FsError::from_io(&path_str, e))?;
 
-        let metadata = fs::metadata(&path)?;
         let created = match metadata.created() {
             Ok(time) => {
                 let datetime: chrono::DateTime<chrono::Local> = time.into();
@@ -95,7 +112,8 @@ impl FSEntry {
         let mut file_type = None; // Folders don't have file types
         if entry
             .file_type()
-            .expect("File has no path: {entry}")
+            // file_type() is None only for stdin, which cannot occur during a walk.
+            .unwrap_or_else(|| panic!("Entry has no file_type: {:?}", entry.path()))
             .is_file()
         {
             file_type = FileType::from_file_path(&path);
@@ -104,7 +122,7 @@ impl FSEntry {
 
         Ok(Self {
             name: entry.file_name().to_string_lossy().to_string(),
-            path: path.to_string_lossy().to_string(),
+            path: path_str,
             size: metadata.len(),
             file_type,
             created,

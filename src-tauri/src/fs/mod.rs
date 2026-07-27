@@ -1,3 +1,4 @@
 pub mod api;
-mod controllers;
+mod controller;
+pub mod error;
 mod models;
