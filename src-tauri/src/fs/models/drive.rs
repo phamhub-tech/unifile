@@ -11,7 +11,7 @@ pub enum DriveType {
     #[serde(rename = "ssd")]
     Ssd,
 
-    #[serde(rename = "Unknown")]
+    #[serde(rename = "unknown")]
     Unknown,
 }
 

@@ -77,7 +77,7 @@ pub fn get_entries(path: &str) -> Result<Vec<FSEntry>, FsError> {
 /// through the `Result` return value and the `on_update` callback's `Result`.
 ///
 /// [`ApiResponse`]: crate::api::ApiResponse
-pub fn scan_path<F>(path: String, scan_settings: ScanSettings, on_update: F) -> Result<(), FsError>
+fn scan<F>(path: String, scan_settings: ScanSettings, on_update: F) -> Result<(), FsError>
 where
     F: Fn(FSEntry) -> Result<(), FsError>,
 {
@@ -93,10 +93,8 @@ where
 
     let mut override_builder = OverrideBuilder::new(&path);
     for pattern in &scan_settings.ignore_patterns {
-        // ignore::Error converts via #[from] on FsError::OverrideBuild — no map_err needed.
         override_builder.add(&format!("!{pattern}"))?;
     }
-    // ignore::Error converts via #[from] here too.
     let overrides = override_builder.build()?;
     builder.overrides(overrides);
 
@@ -159,7 +157,7 @@ pub async fn do_scan(
 
     let channel = on_event.clone();
     tauri::async_runtime::spawn_blocking(move || {
-        scan_path(path, scan_settings, |entry| {
+        scan(path, scan_settings, |entry| {
             channel
                 .send(ScanEvent::Progress { entry })
                 .map_err(|_| FsError::ChannelClosed)

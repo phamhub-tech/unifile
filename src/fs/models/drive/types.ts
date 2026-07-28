@@ -1,3 +1,9 @@
+export enum IDriveType {
+	Hdd = 'hdd',
+	Ssd = 'ssd',
+	Unknown = 'unknown',
+}
+
 export interface IDriveJson {
 	name: string,
 	total_bytes: number,
@@ -5,14 +11,9 @@ export interface IDriveJson {
 	available_bytes: number,
 	mount_point: string,
 	is_removable: boolean,
-	drive_type: 'ssd' | 'hdd' | 'uknown',
+	drive_type: IDriveType,
 }
 
-export enum IDriveType {
-	Hdd = 'HDD',
-	Ssd = 'SSD',
-	Uknown = 'Unknown',
-}
 export interface IDrive {
 	name: string,
 

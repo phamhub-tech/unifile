@@ -1,4 +1,4 @@
-use std::{fs, path::Path};
+use std::{fs, io::Read, path::Path};
 
 use file_format::{FileFormat, Kind};
 use serde::Serialize;
@@ -44,18 +44,20 @@ pub enum FileType {
     Other,
 }
 impl FileType {
-    /// Detects the [`FileType`] of the file at `path` by reading its magic bytes.
+    /// Detects the [`FileType`] of the file at `path` by reading only its
+    /// first 4096 bytes (enough to cover all common magic numbers).
     ///
-    /// Returns [`FileType::Other`] when detection fails or the kind is unknown.
-    /// Returns `None` only if the `file_format` crate itself fails (currently
-    /// never happens — kept as `Option` to match the crate's API).
+    /// Reading a bounded prefix is far cheaper than `FileFormat::from_file`,
+    /// which reads the entire file. Returns [`FileType::Other`] when the file
+    /// cannot be opened or its format is unrecognised.
     pub fn from_file_path<P: AsRef<Path>>(path: &P) -> Option<Self> {
-        let file_kind = match FileFormat::from_file(&path) {
-            Ok(kind) => kind.kind(),
+        let mut buf = [0u8; 4096];
+        let n = match fs::File::open(path.as_ref()) {
+            Ok(mut f) => f.read(&mut buf).unwrap_or(0),
             Err(_) => return Some(FileType::Other),
         };
 
-        let file_type = match file_kind {
+        let file_type = match FileFormat::from_bytes(&buf[..n]).kind() {
             Kind::Executable => FileType::App,
             Kind::Audio => FileType::Audio,
             Kind::Document => FileType::Document,
@@ -90,7 +92,12 @@ impl FSEntry {
     pub fn from_entry(entry: &ignore::DirEntry) -> Result<Self, FsError> {
         let path = entry.path();
         let path_str = path.display().to_string();
-        let metadata = fs::metadata(entry.path())
+        // Use the metadata cached by the walker instead of a second
+        // `fs::metadata` syscall. Falls back to `fs::metadata` if the walker
+        // did not cache it (e.g. the entry came from a non-caching source).
+        let metadata = entry
+            .metadata()
+            .or_else(|_| fs::metadata(entry.path()))
             .map_err(|e| FsError::from_io(&path_str, e))?;
 
         let created = match metadata.created() {
