@@ -107,7 +107,6 @@ impl AppSettingsManager {
         std::thread::spawn(move || {
             let (tx, rx) = std::sync::mpsc::channel();
 
-            // B8 fix: don't panic if the watcher cannot be created.
             let mut watcher = match recommended_watcher(tx) {
                 Ok(w) => w,
                 Err(e) => {

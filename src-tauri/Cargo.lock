@@ -4626,6 +4626,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-opener",
  "tauri-plugin-updater",
+ "thiserror 2.0.19",
  "unifile_core",
 ]
 

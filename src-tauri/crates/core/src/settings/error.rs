@@ -1,13 +1,6 @@
 /// All errors that can occur while loading, saving, or watching app settings.
 #[derive(Debug, thiserror::Error)]
 pub enum SettingsError {
-    /// The settings [`Mutex`] was poisoned because a thread panicked while
-    /// holding it.
-    ///
-    /// [`Mutex`]: std::sync::Mutex
-    #[error("Settings lock is poisoned")]
-    LockPoisoned,
-
     /// A filesystem IO error occurred while reading or writing the settings file.
     ///
     /// `#[from]` lets `?` convert `std::io::Error` automatically in functions

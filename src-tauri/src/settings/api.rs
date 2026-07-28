@@ -1,9 +1,10 @@
 use tauri::State;
 
-use unifile_core::settings::{AppSettings, SettingsError};
+use unifile_core::settings::AppSettings;
 
 use crate::api::ApiResponse;
 
+use super::error::ManagerError;
 use super::models::AppSettingsManager;
 
 /// Returns the current app settings.
@@ -16,7 +17,7 @@ pub fn get_settings(manager: State<AppSettingsManager>) -> ApiResponse<Option<Ap
         .settings
         .lock()
         .map(|guard| guard.clone())
-        .map_err(|_| SettingsError::LockPoisoned)
+        .map_err(|_| ManagerError::LockPoisoned)
         .into()
 }
 
