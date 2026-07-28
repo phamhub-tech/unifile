@@ -1,9 +1,7 @@
 use ignore::{overrides::OverrideBuilder, WalkBuilder};
-use tauri::ipc::Channel;
 
 use crate::fs::error::FsError;
 use crate::fs::models::drive::Drive;
-use crate::fs::models::scan::ScanEvent;
 use crate::settings::models::ScanSettings;
 
 use super::models::entry::FSEntry;
@@ -77,7 +75,7 @@ pub fn get_entries(path: &str) -> Result<Vec<FSEntry>, FsError> {
 /// through the `Result` return value and the `on_update` callback's `Result`.
 ///
 /// [`ApiResponse`]: crate::api::ApiResponse
-fn scan<F>(path: String, scan_settings: ScanSettings, on_update: F) -> Result<(), FsError>
+pub fn scan<F>(path: String, scan_settings: ScanSettings, on_update: F) -> Result<(), FsError>
 where
     F: Fn(FSEntry) -> Result<(), FsError>,
 {
@@ -131,44 +129,6 @@ where
         // Propagates FsError::ChannelClosed if the frontend disconnected.
         on_update(fs_entry)?;
     }
-
-    Ok(())
-}
-
-/// Orchestrates a full recursive scan: emits `Started`, streams `Progress`
-/// events per entry via `on_event`, then emits `Finished`.
-///
-/// Runs the synchronous walk on a blocking thread so the async executor
-/// is free during the scan.
-///
-/// # Errors
-///
-/// Returns `Err(FsError::ChannelClosed)` if any channel send fails.
-/// Returns `Err(FsError::TaskPanic)` if the blocking task panics.
-/// Any other IO error from the walk is propagated unchanged.
-pub async fn do_scan(
-    path: String,
-    scan_settings: ScanSettings,
-    on_event: &Channel<ScanEvent>,
-) -> Result<(), FsError> {
-    on_event
-        .send(ScanEvent::Started {})
-        .map_err(|_| FsError::ChannelClosed)?;
-
-    let channel = on_event.clone();
-    tauri::async_runtime::spawn_blocking(move || {
-        scan(path, scan_settings, |entry| {
-            channel
-                .send(ScanEvent::Progress { entry })
-                .map_err(|_| FsError::ChannelClosed)
-        })
-    })
-    .await
-    .map_err(|_| FsError::TaskPanic)??;
-
-    on_event
-        .send(ScanEvent::Finished {})
-        .map_err(|_| FsError::ChannelClosed)?;
 
     Ok(())
 }

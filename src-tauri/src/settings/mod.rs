@@ -1,5 +1,2 @@
-pub mod api;
-pub mod error;
-pub mod models;
-
-mod controller;
+pub(crate) mod api;
+pub(crate) mod models;

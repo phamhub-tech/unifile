@@ -1,9 +1,10 @@
 use tauri::State;
 
+use unifile_core::settings::{AppSettings, SettingsError};
+
 use crate::api::ApiResponse;
 
-use super::controller;
-use super::models::{AppSettings, AppSettingsManager};
+use super::models::AppSettingsManager;
 
 /// Returns the current app settings.
 ///
@@ -11,7 +12,12 @@ use super::models::{AppSettings, AppSettingsManager};
 /// response if the mutex is poisoned (another thread panicked while holding it).
 #[tauri::command]
 pub fn get_settings(manager: State<AppSettingsManager>) -> ApiResponse<Option<AppSettings>> {
-    controller::get_settings(&manager).into()
+    manager
+        .settings
+        .lock()
+        .map(|guard| guard.clone())
+        .map_err(|_| SettingsError::LockPoisoned)
+        .into()
 }
 
 /// Writes `new_settings` to disk.
@@ -23,5 +29,5 @@ pub fn save_settings(
     manager: State<AppSettingsManager>,
     new_settings: AppSettings,
 ) -> ApiResponse<Option<()>> {
-    controller::save_settings(&manager, new_settings).into()
+    manager.save(&new_settings).into()
 }

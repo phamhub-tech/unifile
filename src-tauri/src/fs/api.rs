@@ -1,13 +1,15 @@
 use tauri::ipc::Channel;
 use tauri::State;
 
-use crate::api::ApiResponse;
-use crate::fs::models::drive::Drive;
-use crate::fs::models::entry::FSEntry;
-use crate::fs::models::scan::ScanEvent;
-use crate::settings::models::AppSettingsManager;
+use unifile_core::fs;
+use unifile_core::fs::{
+     scan, Drive, FSEntry, FsError, FsResult, ScanEvent,
+};
 
-use super::controller;
+use unifile_core::settings::ScanSettings;
+
+use crate::api::ApiResponse;
+use crate::settings::models::AppSettingsManager;
 
 /// Returns all mounted drives detected on the system.
 ///
@@ -15,7 +17,7 @@ use super::controller;
 /// `sysinfo` returns an empty list rather than an error.
 #[tauri::command]
 pub fn get_drives() -> ApiResponse<Vec<Drive>> {
-    ApiResponse::ok(controller::get_drives())
+    ApiResponse::ok(fs::get_drives())
 }
 
 /// Returns the immediate children of `path` (depth = 1).
@@ -24,7 +26,7 @@ pub fn get_drives() -> ApiResponse<Vec<Drive>> {
 /// stops enumeration early and is returned as an error response.
 #[tauri::command]
 pub fn get_entries(path: String) -> ApiResponse<Option<Vec<FSEntry>>> {
-    controller::get_entries(&path).into()
+    fs::get_entries(&path).into()
 }
 
 /// Recursively scans `path` for all filesystem entries and streams each one
@@ -47,14 +49,50 @@ pub async fn scan_path(
     settings_manager: State<'_, AppSettingsManager>,
     on_event: Channel<ScanEvent>,
 ) -> Result<ApiResponse<Option<()>>, String> {
-    // B1 fix: clone the settings before the MutexGuard is dropped so the
+    // Clone the settings before the MutexGuard is dropped so the
     // mutex is released immediately, not held for the entire scan.
     let scan_settings = match settings_manager.settings.lock() {
         Ok(guard) => guard.scan.clone(),
         Err(_) => return Ok(ApiResponse::err("Failed to acquire settings lock")),
     };
 
-    Ok(controller::do_scan(path, scan_settings, &on_event)
-        .await
-        .into())
+    Ok(do_scan(path, scan_settings, &on_event).await.into())
+}
+
+/// Orchestrates a full recursive scan: emits `Started`, streams `Progress`
+/// events per entry via `on_event`, then emits `Finished`.
+///
+/// Runs the synchronous walk on a blocking thread so the async executor
+/// is free during the scan.
+///
+/// # Errors
+///
+/// Returns `Err(FsError::ChannelClosed)` if any channel send fails.
+/// Returns `Err(FsError::TaskPanic)` if the blocking task panics.
+/// Any other IO error from the walk is propagated unchanged.
+pub async fn do_scan(
+    path: String,
+    scan_settings: ScanSettings,
+    on_event: &Channel<ScanEvent>,
+) -> FsResult<()> {
+    on_event
+        .send(ScanEvent::Started {})
+        .map_err(|_| FsError::ChannelClosed)?;
+
+    let channel = on_event.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        scan(path, scan_settings, |entry| {
+            channel
+                .send(ScanEvent::Progress { entry })
+                .map_err(|_| FsError::ChannelClosed)
+        })
+    })
+    .await
+    .map_err(|_| FsError::TaskPanic)??;
+
+    on_event
+        .send(ScanEvent::Finished {})
+        .map_err(|_| FsError::ChannelClosed)?;
+
+    Ok(())
 }

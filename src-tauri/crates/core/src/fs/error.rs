@@ -83,3 +83,6 @@ impl FsError {
         }
     }
 }
+
+/// type alias for Result<T, FsError>
+pub type FsResult<T> = core::result::Result<T, FsError>;
