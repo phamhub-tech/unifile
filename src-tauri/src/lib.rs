@@ -1,4 +1,6 @@
+use log::LevelFilter;
 use tauri::Manager;
+use tauri_plugin_log::{Target, TargetKind};
 
 mod api;
 mod fs;
@@ -8,6 +10,19 @@ mod utils;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .level(LevelFilter::Info)
+                .level_for("unifile_core", LevelFilter::Debug)
+                .targets([
+                    Target::new(TargetKind::Stdout),
+                    Target::new(TargetKind::LogDir {
+                        file_name: Some("unifile".into()),
+                    }),
+                    Target::new(TargetKind::Webview),
+                ])
+                .build(),
+        )
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {

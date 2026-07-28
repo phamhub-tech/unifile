@@ -2,9 +2,7 @@ use tauri::ipc::Channel;
 use tauri::State;
 
 use unifile_core::fs;
-use unifile_core::fs::{
-     scan, Drive, FSEntry, FsError, FsResult, ScanEvent,
-};
+use unifile_core::fs::{scan, Drive, FSEntry, FsError, FsResult, ScanEvent};
 
 use unifile_core::settings::ScanSettings;
 

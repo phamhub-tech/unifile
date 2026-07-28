@@ -45,7 +45,7 @@ impl<T: Serialize> ApiResponse<Option<T>> {
 ///
 /// This is the bridge between controller/model code (which returns `Result`)
 /// and command functions (which return `ApiResponse`).
-/// 
+///
 /// Commands that can fail call `.into()` at the boundary instead of manually
 /// constructing an `ApiResponse`:
 ///
