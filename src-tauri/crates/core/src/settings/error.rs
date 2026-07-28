@@ -15,11 +15,4 @@ pub enum SettingsError {
     /// [`AppSettings`]: crate::settings::models::AppSettings
     #[error("Failed to parse settings: {0}")]
     Deserialization(#[from] serde_json::Error),
-
-    /// The file-system watcher could not be initialised or encountered a
-    /// runtime error.
-    ///
-    /// `#[from]` lets `?` convert `notify::Error` automatically.
-    #[error("File watcher error: {0}")]
-    Watcher(#[from] notify::Error),
 }

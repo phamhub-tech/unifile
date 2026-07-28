@@ -4637,7 +4637,6 @@ dependencies = [
  "chrono",
  "file-format",
  "ignore",
- "notify",
  "serde",
  "serde_json",
  "sysinfo",
