@@ -1,4 +1,5 @@
 use ignore::{overrides::OverrideBuilder, WalkBuilder};
+use tracing::{debug, instrument, trace, warn};
 
 use crate::fs::error::FsError;
 use crate::fs::models::drive::Drive;
@@ -31,7 +32,7 @@ pub fn get_entries(path: &str) -> Result<Vec<FSEntry>, FsError> {
         let entry = match result {
             Ok(e) => e,
             Err(e) => {
-                eprintln!("Walk error: {e}");
+                warn!(error = %e, "Walk error, skipping entry");
                 continue;
             }
         };
@@ -44,11 +45,11 @@ pub fn get_entries(path: &str) -> Result<Vec<FSEntry>, FsError> {
         match FSEntry::from_entry(&entry) {
             Ok(e) => entries.push(e),
             Err(FsError::PermissionDenied { path }) => {
-                eprintln!("Permission denied: {path}");
+                warn!(%path, "Permission denied, skipping entry");
                 continue;
             }
             Err(FsError::NotFound { path }) => {
-                eprintln!("Not found: {path}");
+                warn!(%path, "Entry not found (removed during walk), skipping");
                 continue;
             }
             Err(e) => return Err(e),
@@ -68,13 +69,7 @@ pub fn get_entries(path: &str) -> Result<Vec<FSEntry>, FsError> {
 /// Returns `Err` if an unexpected IO error occurs (not permission-denied or
 /// not-found, which are silently skipped). Also returns `Err` if `on_update`
 /// returns `Err`.
-///
-/// # Separation of concerns
-///
-/// This function never touches [`ApiResponse`]. All error signalling goes
-/// through the `Result` return value and the `on_update` callback's `Result`.
-///
-/// [`ApiResponse`]: crate::api::ApiResponse
+#[instrument(skip(on_update))]
 pub fn scan<F>(path: String, scan_settings: ScanSettings, on_update: F) -> Result<(), FsError>
 where
     F: Fn(FSEntry) -> Result<(), FsError>,
@@ -96,7 +91,8 @@ where
     let overrides = override_builder.build()?;
     builder.overrides(overrides);
 
-    println!("Scanning {path}");
+    debug!(?scan_settings, "Walk starting");
+    let mut count: u64 = 0;
     for result in builder.build() {
         let entry = match result {
             Ok(e) => e,
@@ -115,20 +111,22 @@ where
             Ok(e) => e,
             // Non-fatal: log and continue the walk.
             Err(FsError::PermissionDenied { path }) => {
-                eprintln!("Permission denied: {path}");
+                warn!(%path, "Permission denied, skipping entry");
                 continue;
             }
             Err(FsError::NotFound { path }) => {
-                eprintln!("Not found (file removed during scan): {path}");
+                warn!(%path, "Entry not found (removed during scan), skipping");
                 continue;
             }
             // Fatal: stop the scan and report to the caller.
             Err(e) => return Err(e),
         };
 
-        // Propagates FsError::ChannelClosed if the frontend disconnected.
+        trace!(path = %fs_entry.path, kind = ?fs_entry.entry_type, "Entry discovered");
+        count += 1;
         on_update(fs_entry)?;
     }
 
+    debug!(count, "Walk complete");
     Ok(())
 }

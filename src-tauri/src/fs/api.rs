@@ -1,5 +1,6 @@
 use tauri::ipc::Channel;
 use tauri::State;
+use tracing::{debug, error, info, instrument};
 
 use unifile_core::fs;
 use unifile_core::fs::{scan, Drive, FSEntry, FsError, FsResult, ScanEvent};
@@ -42,18 +43,21 @@ pub fn get_entries(path: String) -> ApiResponse<Option<Vec<FSEntry>>> {
 /// Returns `Result` as required by Tauri for async commands that accept
 /// borrowed state parameters.
 #[tauri::command]
+#[instrument(skip(settings_manager, on_event))]
 pub async fn scan_path(
     path: String,
     settings_manager: State<'_, AppSettingsManager>,
     on_event: Channel<ScanEvent>,
 ) -> Result<ApiResponse<Option<()>>, String> {
-    // Clone the settings before the MutexGuard is dropped so the
-    // mutex is released immediately, not held for the entire scan.
     let scan_settings = match settings_manager.settings.lock() {
         Ok(guard) => guard.scan.clone(),
-        Err(_) => return Ok(ApiResponse::err("Failed to acquire settings lock")),
+        Err(_) => {
+            error!("Failed to acquire settings lock");
+            return Ok(ApiResponse::err("Failed to acquire settings lock"));
+        }
     };
 
+    debug!(?scan_settings, "Scan requested");
     Ok(do_scan(path, scan_settings, &on_event).await.into())
 }
 
@@ -68,11 +72,14 @@ pub async fn scan_path(
 /// Returns `Err(FsError::ChannelClosed)` if any channel send fails.
 /// Returns `Err(FsError::TaskPanic)` if the blocking task panics.
 /// Any other IO error from the walk is propagated unchanged.
+#[instrument(skip(scan_settings, on_event))]
 pub async fn do_scan(
     path: String,
     scan_settings: ScanSettings,
     on_event: &Channel<ScanEvent>,
 ) -> FsResult<()> {
+    info!("Scan started");
+
     on_event
         .send(ScanEvent::Started {})
         .map_err(|_| FsError::ChannelClosed)?;
@@ -92,5 +99,6 @@ pub async fn do_scan(
         .send(ScanEvent::Finished {})
         .map_err(|_| FsError::ChannelClosed)?;
 
+    info!("Scan finished");
     Ok(())
 }
